@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Checkout • SAI STORES</title>
+  <link rel="stylesheet" href="../css/user.css">
+</head>
+<body>
+  <header id="header"></header>
+
+  <main class="checkout-page">
+    <h1>Checkout</h1>
+
+    <!-- ITEMS LIST -->
+    <section id="checkoutItems" class="card">
+      <p class="muted">Loading items...</p>
+    </section>
+
+    <!-- SUMMARY -->
+    <aside class="summary-box card">
+      <p><span>Subtotal</span><span id="subtotal">0</span></p>
+      <p><span>Delivery</span><span id="delivery">0</span></p>
+      <p class="total-row"><span>Total</span><span id="total">0</span></p>
+    </aside>
+
+    <label for="note" class="label">Order note (optional)</label>
+    <textarea id="note" placeholder="Any instructions for the seller"></textarea>
+
+    <!-- PAYMENT OPTIONS -->
+    <div class="actions">
+      <button id="codBtn" class="btn btn-primary">Cash on Delivery</button>
+      <button id="onlinePayBtn" class="btn btn-ghost">Pay Online</button>
+    </div>
+  </main>
+
+  <!-- PROFILE POPUP -->
+  <div id="profileModal" class="profile-box" style="display:none;">
+      <label>Full Name</label>
+      <input id="p_name" placeholder="Enter name">
+
+      <label>Phone Number</label>
+      <input id="p_phone" placeholder="Enter phone number">
+
+      <label>Address</label>
+      <textarea id="p_address" placeholder="Enter full address"></textarea>
+
+      <label>Pincode</label>
+      <input id="p_pincode" placeholder="Enter pincode">
+
+      <label>City</label>
+      <input id="p_city" placeholder="City">
+
+      <label>State</label>
+      <input id="p_state" placeholder="State">
+
+      <button id="saveProfileBtn">Save Profile</button>
+  </div>
+
+  <!-- JS -->
+  <script type="module" src="../js/user/checkout.js"></script>
+</body>
+</html>

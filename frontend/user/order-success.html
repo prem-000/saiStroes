@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status</title>
+    <link rel="stylesheet" href="../css/user.css">
+
+    <style>
+        .icon {
+            font-size: 60px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        #orderStatusHeading {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        #orderSubText {
+            text-align: center;
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="success-container">
+
+        <!-- STATUS ICON + HEADING + SUB TEXT -->
+        <div id="statusIcon" class="icon"></div>
+        <h1 id="orderStatusHeading"></h1>
+        <p id="orderSubText"></p>
+
+        <!-- ORDER SUMMARY -->
+        <div id="orderInfo" class="order-info">
+            Loading order details...
+        </div>
+
+        <!-- ADDRESS SECTION -->
+        <h3>Delivery Address</h3>
+        <div id="addressBox" class="address-box"></div>
+
+        <!-- ITEMS TABLE -->
+        <h3>Items</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+        </table>
+
+        <a href="orders.html" class="btn">View My Orders</a>
+        <a href="products.html" class="btn-secondary">Continue Shopping</a>
+    </div>
+
+    <script type="module" src="../js/user/order-success.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Product</title>
+
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/shop_owner.css" />
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <h2>Add Product</h2>
+
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="orders.html">Orders</a>
+            <a href="my_products.html">My Products</a>
+            <a href="add_product.html" class="active-link">Add Product</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <section class="form-wrapper">
+        <form id="addProductForm" class="form-card">
+
+            <label>Product Title</label>
+            <input type="text" id="title" required />
+
+            <label>Description</label>
+            <textarea id="description"></textarea>
+
+            <label>Price</label>
+            <input type="number" id="price" required />
+
+            <label>Stock</label>
+            <input type="number" id="stock" required />
+
+            <label>Category</label>
+            <select id="category" required>
+                <option value="">Select Category</option>
+                <option value="fruits">Fruits</option>
+                <option value="vegetables">Vegetables</option>
+                <option value="snacks">Snacks</option>
+                <option value="dairy">Dairy</option>
+                <option value="grocery">Grocery</option>
+                <option value="electronics">Electronics</option>
+                <option value="fashion">Fashion</option>
+            </select>
+
+            <label>Image URL</label>
+            <input type="text" id="image" placeholder="https://example.com/product.jpg" />
+
+            <button class="btn-primary" type="submit">Add Product</button>
+        </form>
+    </section>
+
+    <script type="module">
+        import { API_BASE } from "../js/api.js";
+
+        const form = document.getElementById("addProductForm");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const token = localStorage.getItem("shop_owner_token");
+            if (!token) return alert("Login required");
+
+            const payload = {
+                title: document.getElementById("title").value,
+                description: document.getElementById("description").value,
+                price: Number(document.getElementById("price").value),
+                stock: Number(document.getElementById("stock").value),
+                category: document.getElementById("category").value.trim().toLowerCase(),
+                images: [document.getElementById("image").value]  
+            };
+
+            try {
+                const res = await fetch(API_BASE + "/shop-owner/products/create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) return alert(data.detail || "Failed to add product");
+
+                alert("Product added successfully");
+                window.location.href = "my_products.html";
+
+            } catch (err) {
+                alert("Something went wrong");
+            }
+        });
+
+    </script>
+
+</body>
+</html>

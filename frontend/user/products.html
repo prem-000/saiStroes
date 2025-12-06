@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAI STORES | Home</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.0.0/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../css/user/products.css">
+</head>
+
+<body>
+
+    <!-- TOP NAV -->
+    <header class="navbar">
+        <div class="nav-left">
+            <h2 class="logo">SAI STORES</h2>
+        </div>
+
+        <div class="nav-center">
+            <div class="search-box">
+                <input id="searchInput" type="text" placeholder="Search for products..." class="search-input">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <a href="cart.html" class="nav-icon cart-link">
+                🛒
+                <span id="cartCount" class="cart-badge">0</span>
+            </a>
+
+            <a href="login.html" class="nav-icon">👤</a>
+
+            <a href="notifications.html" class="nav-icon notify-link">
+                🔔
+                <span id="notifCount" class="notif-badge">0</span>
+            </a>
+        </div>
+    </header>
+
+    <br><br><br>
+
+    <!-- FRESH PICKS SECTION (auto-generated with JS) -->
+    <div id="productList"></div>
+
+    <!-- CATEGORY GRID -->
+    <h2 class="section-title">Shop by Categories</h2>
+    <div class="category-grid" id="categoryGrid"></div>
+
+    <!-- INFO BOX -->
+    <section class="info-box">
+        <h3>Why Shop with SAI STORES?</h3>
+
+        <div class="info-item" onclick="toggleInfo(this)">
+            <p class="info-title">✔ Fast delivery within 45 minutes</p>
+            <p class="info-more">Orders processed instantly with optimized delivery routing.</p>
+        </div>
+
+        <div class="info-item" onclick="toggleInfo(this)">
+            <p class="info-title">✔ Fresh and hand-picked items</p>
+            <p class="info-more">Premium quality items hand-picked every morning.</p>
+        </div>
+
+        <div class="info-item" onclick="toggleInfo(this)">
+            <p class="info-title">✔ Best prices and daily offers</p>
+            <p class="info-more">Deals updated daily for maximum savings.</p>
+        </div>
+
+        <div class="info-item" onclick="toggleInfo(this)">
+            <p class="info-title">✔ Trusted by 10,000+ customers</p>
+            <p class="info-more">Reliable service and customer-first support.</p>
+        </div>
+    </section>
+
+    <!-- BOTTOM NAV -->
+    <nav>
+        <div class="bottom-header">
+            <a href="profile.html" class="bh-item">👤 Profile</a>
+            <a href="wishlist.html" class="bh-item">❤️ Wishlist</a>
+            <a href="orders.html" class="bh-item">📦 Orders</a>
+        </div>
+    </nav>
+
+    <!-- MAIN JS -->
+    <script type="module" src="../js/user/products.js"></script>
+
+    <script>
+        function toggleInfo(el) {
+            el.classList.toggle("active");
+        }
+    </script>
+
+</body>
+</html>

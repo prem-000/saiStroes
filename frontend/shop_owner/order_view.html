@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/shop_owner.css">
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <h2>Order Details</h2>
+
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="orders.html">Orders</a>
+            <a href="add_product.html">Add Product</a>
+            <a href="notifications.html">Notifications</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+
+    <section class="order-details-container">
+
+        <!-- ORDER INFO -->
+        <div class="order-box">
+            <h3>Order Info</h3>
+
+            <p><strong>Order ID:</strong> <span id="orderId"></span></p>
+            <p><strong>Status:</strong> 
+                <span id="orderStatus" class="status-pill"></span>
+            </p>
+            <p><strong>Date:</strong> <span id="orderDate"></span></p>
+        </div>
+
+
+        <!-- DELIVERY ADDRESS -->
+        <div class="order-box">
+            <h3>Delivery Address</h3>
+
+            <p><strong>Name:</strong> <span id="custName"></span></p>
+            <p><strong>Phone:</strong> <span id="custPhone"></span></p>
+
+            <p><strong>Address:</strong></p>
+            <div id="custAddress" class="address-box"></div>
+        </div>
+
+
+        <!-- ORIGIN ADDRESS -->
+        <div class="order-box">
+            <h3>Origin (Shop) Address</h3>
+            <div id="originAddress" class="address-box">
+                <!-- Optional: Fill from shop owner profile -->
+            </div>
+        </div>
+
+
+        <!-- ITEMS -->
+        <div class="order-box">
+            <h3>Items</h3>
+
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+            </table>
+        </div>
+
+
+        <!-- STATUS UPDATE -->
+        <div class="order-box">
+            <h3>Update Status</h3>
+
+            <select id="statusSelect" class="status-select">
+                <option value="pending">Pending</option>
+                <option value="accepted">Accepted</option>
+                <option value="packed">Packed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+
+            <button class="btn-primary" onclick="updateStatus()">Update</button>
+        </div>
+
+    </section>
+
+    <script src="../js/api.js"></script>
+    <script type="module" src="../js/shop_owner/order_view.js"></script>
+</body>
+</html>

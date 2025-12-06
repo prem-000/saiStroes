@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cart</title>
+  <link rel="stylesheet" href="../css/user/products.css">
+</head>
+<body>
+  <!-- include your navbar here -->
+  <!-- Example: -->
+  <header id="header"></header>
+
+  <main class="cart-page">
+    <h1>My Cart</h1>
+
+    <div class="cart-grid">
+      <section class="cart-items" id="cartItemsContainer">
+        <!-- Items get injected here -->
+        <div id="itemsList"></div>
+      </section>
+
+      <aside class="summary" id="cartSummary">
+        <div class="summary-row"><span>Subtotal</span><span id="subtotal">₹0</span></div>
+        <div class="summary-row"><span>Delivery</span><span id="delivery">₹0</span></div>
+        <div class="summary-row summary-total"><span>Total</span><span id="total">₹0</span></div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button id="checkoutBtn" class="btn btn-primary">Checkout</button>
+          <button id="clearBtn" class="btn btn-ghost">Clear Cart</button>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-top:8px;">You can buy items individually using Buy Now.</div>
+      </aside>
+    </div>
+
+    <div id="emptyState" class="empty" style="display:none;">
+      Your cart is empty. <a href="/">Continue shopping</a>.
+    </div>
+  </main>
+
+  <script  type="module" src="../js/user/cart.js"></script>
+
+  
+</body>
+</html>

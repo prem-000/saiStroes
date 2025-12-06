@@ -1,0 +1,10 @@
+from pydantic import BaseModel
+from typing import Optional
+
+class UserProfile(BaseModel):
+    name: str
+    phone: str
+    address: str
+    pincode: Optional[str] = ""
+    city: Optional[str] = ""
+    state: Optional[str] = ""

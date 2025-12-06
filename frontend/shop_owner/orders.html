@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Owner Orders</title>
+
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/shop_owner.css">
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <h2>My Orders</h2>
+
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="orders.html">Orders</a>
+            <a href="add_product.html">Add Product</a>
+            <a href="notifications.html">Notifications</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+
+    <section class="orders-wrapper">
+
+        <div id="ordersList" class="orders-grid">
+            <!-- JS will load orders here -->
+        </div>
+
+    </section>
+
+    <script src="../js/api.js"></script>
+    <script type="module" src="../js/shop_owner/orders.js"></script>
+</body>
+</html>

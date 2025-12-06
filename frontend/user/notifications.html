@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <link rel="stylesheet" href="../css/user.css">
+</head>
+
+<body>
+
+<header class="top-header">Notifications</header>
+
+<main class="notification-page">
+
+    <!-- DATE FILTER -->
+    <div class="filter-box">
+        <label>Select Date:</label>
+        <input type="date" id="dateFilter">
+    </div>
+
+    <hr>
+
+    <!-- NOTIFICATION LIST -->
+    <div id="notificationList" class="notif-list">
+        <p class="loading">Loading notifications...</p>
+    </div>
+</main>
+
+<script type="module" src="../js/user/notifications.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Owner Login</title>
+
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/shop_owner.css">
+</head>
+
+<body class="center-screen">
+
+    <div class="auth-card">
+        <h2 class="title">Shop Owner Login</h2>
+
+        <form id="loginForm">
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+
+            <button class="btn-primary" type="submit">Login</button>
+
+            <p class="switch-text">
+                New owner? <a href="register.html">Register here</a>
+            </p>
+        </form>
+    </div>
+
+    <!-- Load ONLY auth.js as module -->
+    <script type="module" src="../js/shop_owner/auth.js"></script>
+
+</body>
+</html>

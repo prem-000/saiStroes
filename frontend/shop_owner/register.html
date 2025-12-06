@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Owner Register</title>
+
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/shop_owner.css">
+</head>
+
+<body class="center-screen">
+
+    <div class="auth-card">
+        <h2 class="title">Shop Owner Registration</h2>
+
+        <form id="registerForm">
+
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="name" required>
+            </div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+
+            <button class="btn-primary" type="submit">Register</button>
+
+            <p class="switch-text">
+                Already have an account? <a href="login.html">Login</a>
+            </p>
+        </form>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/shop_owner/auth.js"></script>
+</body>
+</html>

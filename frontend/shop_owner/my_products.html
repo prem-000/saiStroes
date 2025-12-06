@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Products</title>
+
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/shop_owner.css">
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <h2>My Products</h2>
+
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="orders.html">Orders</a>
+            <a href="my_products.html" class="active-link">My Products</a>
+            <a href="add_product.html">Add Product</a>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- FIXED: Correct container ID expected by JS -->
+    <section class="products-wrapper">
+        <div id="productsList" class="products-grid"></div>
+    </section>
+
+    <!-- DO NOT import api.js separately -->
+    <script type="module" src="../js/shop_owner/products.js"></script>
+
+</body>
+</html>

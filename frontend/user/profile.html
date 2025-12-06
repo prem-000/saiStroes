@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="../css/profile.css">
+</head>
+
+<body>
+
+    <div class="header">
+        <h2>User Profile</h2>
+    </div>
+
+    <div class="container">
+
+        <!-- Profile Section -->
+        <div class="section-card">
+            <h3>Personal Details</h3>
+
+            <label>Full Name</label>
+            <input id="p_name" placeholder="Enter name">
+
+            <label>Phone Number</label>
+            <input id="p_phone" placeholder="Enter phone number">
+
+            <label>Address</label>
+            <textarea id="p_address" placeholder="Enter full address"></textarea>
+
+            <div class="grid-3">
+                <div>
+                    <label>Pincode</label>
+                    <input id="p_pincode" placeholder="Pincode">
+                </div>
+
+                <div>
+                    <label>City</label>
+                    <input id="p_city" placeholder="City">
+                </div>
+
+                <div>
+                    <label>State</label>
+                    <input id="p_state" placeholder="State">
+                </div>
+            </div>
+
+            <button id="saveBtn" class="btn-primary">Save Profile</button>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="section-card">
+            <h3>Settings</h3>
+
+            <!-- CART -->
+            <button class="btn-option" onclick="goToCart()">🛒 Go to Cart</button>
+
+            <!-- PAYMENT FAQ -->
+            <button class="btn-option" onclick="toggleFAQ()">💳 Payment Information</button>
+
+            <!-- FAQ SECTION -->
+            <div id="faqSection" class="faq-section" style="display:none;">
+
+                <div class="faq-item">
+                    <button class="faq-question">How do payments work?</button>
+                    <div class="faq-answer">
+                        We create a secure Razorpay payment order.<br>
+                        You pay using UPI, Card, Netbanking, or Wallet.<br>
+                        Razorpay confirms the payment instantly.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">Is my payment secure?</button>
+                    <div class="faq-answer">
+                        Yes. Razorpay uses PCI-DSS Level 1 security.<br>
+                        Your card/bank details are never stored.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">Why did my payment fail?</button>
+                    <div class="faq-answer">
+                        Payments may fail due to:<br>
+                        • Bank server downtime<br>
+                        • Incorrect OTP<br>
+                        • Insufficient balance
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question">When will I get a refund?</button>
+                    <div class="faq-answer">
+                        Refunds are processed by Razorpay.<br>
+                        Estimated time: 3–5 working days.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ABOUT & FEEDBACK (INLINE) -->
+            <button class="btn-option" onclick="showAbout()">ℹ️ About Us</button>
+            <button class="btn-option" onclick="showFeedback()">✉️ Feedback</button>
+
+            <!-- INLINE INFO BOX -->
+            <div id="infoSection" class="info-section" style="display:none;"></div>
+
+            <!-- LOGOUT -->
+            <button class="btn-danger" onclick="logout()">Logout</button>
+        </div>
+
+    </div>
+
+    <script type="module" src="../js/user/profile.js"></script>
+</body>
+</html>
