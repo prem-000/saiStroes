@@ -1,5 +1,4 @@
-// IMPORTANT: API BASE
-import { API_BASE } from "../api.js";
+import { apiRequest } from "../api.js";
 
 // ----------------------------------------------
 // AUTH CHECK
@@ -10,35 +9,8 @@ if (!token) {
 }
 
 // ----------------------------------------------
-// OWNER REQUEST WRAPPER
+// DOM HELPERS
 // ----------------------------------------------
-async function ownerRequest(url, method = "GET", data = null) {
-    const token = localStorage.getItem("shop_owner_token");
-
-    const options = {
-        method,
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token
-        }
-    };
-
-    if (data) options.body = JSON.stringify(data);
-
-    const res = await fetch(API_BASE + url, options);
-    let json;
-
-    try {
-        json = await res.json();
-    } catch {
-        throw new Error("Invalid server response");
-    }
-
-    if (!res.ok) throw new Error(json.detail || "Request failed");
-
-    return json;
-}
-
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
@@ -50,7 +22,7 @@ async function loadProducts() {
     if (!root) return;
 
     try {
-        const products = await ownerRequest("/shop-owner/products/my");
+        const products = await apiRequest("/shop-owner/products/my");
         renderProducts(products);
     } catch (err) {
         console.error("Load products error:", err);
@@ -61,7 +33,7 @@ async function loadProducts() {
 function renderProducts(products) {
     const root = $("#productsList");
 
-    if (!products || !products.length) {
+    if (!Array.isArray(products) || products.length === 0) {
         root.innerHTML = `<p class="muted">No products found</p>`;
         return;
     }
@@ -114,7 +86,7 @@ async function deleteProduct(id) {
     if (!confirm("Delete this product?")) return;
 
     try {
-        await ownerRequest(`/shop-owner/products/${id}`, "DELETE");
+        await apiRequest(`/shop-owner/products/${id}`, "DELETE");
         loadProducts();
     } catch (err) {
         alert(err.message);
@@ -130,13 +102,16 @@ async function loadProductForEdit() {
     if (!editId) return;
 
     try {
-        const products = await ownerRequest("/shop-owner/products/my");
+        const products = await apiRequest("/shop-owner/products/my");
         const p = products.find(x => x.id === editId);
 
-        if (!p) return alert("Product not found");
+        if (!p) {
+            alert("Product not found");
+            return;
+        }
 
         $("#title").value = p.title;
-        $("#description").value = p.description;
+        $("#description").value = p.description || "";
         $("#price").value = p.price;
         $("#stock").value = p.stock;
         $("#category").value = p.category || "";
@@ -166,7 +141,7 @@ if (editForm) {
         };
 
         try {
-            await ownerRequest(`/shop-owner/products/${editId}`, "PUT", payload);
+            await apiRequest(`/shop-owner/products/${editId}`, "PUT", payload);
             window.location.href = "/shop_owner/my_products.html";
         } catch (err) {
             alert(err.message);
@@ -193,7 +168,7 @@ if (createForm) {
         };
 
         try {
-            await ownerRequest("/shop-owner/products/create", "POST", payload);
+            await apiRequest("/shop-owner/products/create", "POST", payload);
             window.location.href = "/shop_owner/my_products.html";
         } catch (err) {
             alert(err.message);

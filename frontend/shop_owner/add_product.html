@@ -58,7 +58,7 @@
     </section>
 
     <script type="module">
-        import { API_BASE } from "../js/api.js";
+        import { apiRequest } from "../js/api.js";
 
         const form = document.getElementById("addProductForm");
 
@@ -66,39 +66,38 @@
             e.preventDefault();
 
             const token = localStorage.getItem("shop_owner_token");
-            if (!token) return alert("Login required");
+            if (!token) {
+                alert("Login required");
+                return;
+            }
 
             const payload = {
                 title: document.getElementById("title").value,
                 description: document.getElementById("description").value,
                 price: Number(document.getElementById("price").value),
                 stock: Number(document.getElementById("stock").value),
-                category: document.getElementById("category").value.trim().toLowerCase(),
-                images: [document.getElementById("image").value]  
+                category: document.getElementById("category").value
+                    .trim()
+                    .toLowerCase(),
+                images: [document.getElementById("image").value]
             };
 
             try {
-                const res = await fetch(API_BASE + "/shop-owner/products/create", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: "Bearer " + token
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await res.json();
-                if (!res.ok) return alert(data.detail || "Failed to add product");
+                await apiRequest(
+                    "/shop-owner/products/create",
+                    "POST",
+                    payload
+                );
 
                 alert("Product added successfully");
                 window.location.href = "my_products.html";
 
             } catch (err) {
-                alert("Something went wrong");
+                alert(err.message || "Failed to add product");
             }
         });
-
     </script>
+
 
 </body>
 </html>

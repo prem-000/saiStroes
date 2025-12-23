@@ -29,7 +29,7 @@ if (registerForm) {
 
 
 
-import { apiRequest, API_BASE } from "../api.js";
+import { apiRequest } from "../api.js";
 
 // SHOP OWNER LOGIN
 const loginForm = document.getElementById("loginForm");

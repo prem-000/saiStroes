@@ -1,3 +1,4 @@
+import { apiRequest } from "../api.js";
 
 // ------------------------------
 // USER REGISTER
@@ -13,7 +14,7 @@ if (registerForm) {
         const password = document.getElementById("password").value.trim();
 
         try {
-            const res = await apiRequest("/auth/register", "POST", {
+            await apiRequest("/auth/register", "POST", {
                 name,
                 email,
                 password,
@@ -27,8 +28,6 @@ if (registerForm) {
     });
 }
 
-
-import { apiRequest } from "../api.js";
 // ------------------------------
 // USER LOGIN
 // ------------------------------
@@ -47,16 +46,12 @@ if (loginForm) {
                 password,
             });
 
-            // Save token in localStorage
             localStorage.setItem("user_token", res.token || res.access_token);
 
-
             alert("Login successful!");
-            window.location.href = "products.html";   // Redirect user to home page
-
+            window.location.href = "products.html";
         } catch (err) {
             alert("Login failed: " + err.message);
         }
     });
 }
-

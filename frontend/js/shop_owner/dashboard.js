@@ -1,10 +1,7 @@
-// ----------------------------------------------
-//  IMPORTS
-// ----------------------------------------------
-import { API_BASE } from "../api.js";
+import { apiRequest } from "../api.js";
 
 // ----------------------------------------------
-//  AUTH CHECK
+// AUTH CHECK
 // ----------------------------------------------
 const token = localStorage.getItem("shop_owner_token");
 if (!token) {
@@ -12,74 +9,42 @@ if (!token) {
 }
 
 // ----------------------------------------------
-//  OWNER-ONLY API REQUEST (FIXED)
-// ----------------------------------------------
-async function ownerRequest(url, method = "GET", data = null) {
-    const token = localStorage.getItem("shop_owner_token");
-    if (!token) throw new Error("No shop owner token found");
-
-    const options = {
-        method,
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token
-        }
-    };
-
-    if (data) options.body = JSON.stringify(data);
-
-    const res = await fetch(API_BASE + url, options);
-
-    let json;
-    try {
-        json = await res.json();
-    } catch {
-        json = { detail: "Invalid JSON response" };
-    }
-
-    if (!res.ok) throw new Error(json.detail || "Request failed");
-
-    return json;
-}
-
-// ----------------------------------------------
-//  UTIL
+// UTIL
 // ----------------------------------------------
 function set(id, val) {
     const el = document.getElementById(id);
-    if (el) el.textContent = val;
+    if (el) el.textContent = val ?? "";
 }
 
 function escape(v) {
     if (v == null) return "";
-    return String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return String(v)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 
 // ----------------------------------------------
-//  DASHBOARD SUMMARY
+// DASHBOARD SUMMARY
 // ----------------------------------------------
 async function loadDashboard() {
     try {
-        const data = await ownerRequest("/shop-owner/dashboard/summary");
+        const data = await apiRequest("/shop-owner/dashboard/summary");
 
         set("totalOrders", data.total_orders);
         set("totalRevenue", "₹" + data.total_revenue);
         set("itemsSold", data.total_items_sold);
         set("weeklyRevenue", "₹" + data.weekly_revenue);
         set("monthlyRevenue", "₹" + data.monthly_revenue);
-        // set("note" (
-        //     "Hand cash amounts are shown strictly for analytical purposes only. ",
-        //     "They are not credited to the shop owner's account balance."
-        // ))
 
     } catch (err) {
         console.error("Dashboard error:", err);
-        alert("Failed to load dashboard: " + err.message);
+        alert("Failed to load dashboard");
     }
 }
 
 // ----------------------------------------------
-//  PRODUCTS TABLE
+// PRODUCTS TABLE
 // ----------------------------------------------
 let productsCache = [];
 let currentSort = { key: null, dir: 1 };
@@ -89,18 +54,13 @@ async function loadProductsTable() {
     if (!root) return;
 
     try {
-        const products = await ownerRequest("/shop-owner/products/my");
+        const products = await apiRequest("/shop-owner/products/my");
         productsCache = Array.isArray(products) ? products.slice() : [];
-
-        console.log("Loaded products:", productsCache);
         renderTable(productsCache);
 
     } catch (err) {
-        console.error("Products load FAILED:", err);
-        root.innerHTML = `
-            <p class="muted">Failed to load products.</p>
-            <p style="color:red;font-size:13px;">Error: ${err.message}</p>
-        `;
+        console.error("Products hooking failed:", err);
+        root.innerHTML = `<p class="muted">Failed to load products</p>`;
     }
 }
 
@@ -125,9 +85,8 @@ function renderTable(list) {
                     <th>Actions</th>
                 </tr>
             </thead>
-
             <tbody>
-                ${list.map((p) => rowTemplate(p)).join("")}
+                ${list.map(rowTemplate).join("")}
             </tbody>
         </table>
     `;
@@ -135,8 +94,7 @@ function renderTable(list) {
     document.getElementById("tableSearch").addEventListener("input", applySearch);
     document.getElementById("exportCsvBtn").addEventListener("click", exportCSV);
 
-    document.querySelectorAll("th[data-key]").forEach((th) => {
-        th.style.cursor = "pointer";
+    document.querySelectorAll("th[data-key]").forEach(th => {
         th.addEventListener("click", () => sortTable(th.dataset.key));
     });
 
@@ -160,36 +118,21 @@ function rowTemplate(p) {
 }
 
 function applySearch() {
-    const search = document.getElementById("tableSearch").value.toLowerCase();
-
-    const filtered = productsCache.filter((p) => {
-        const s = `${p._id} ${p.title} ${p.description}`.toLowerCase();
-        return s.includes(search);
-    });
-
-    updateRows(filtered);
+    const q = document.getElementById("tableSearch").value.toLowerCase();
+    updateRows(productsCache.filter(p =>
+        `${p._id} ${p.title} ${p.description || ""}`.toLowerCase().includes(q)
+    ));
 }
 
 function sortTable(key) {
-    if (currentSort.key === key) currentSort.dir *= -1;
-    else {
-        currentSort.key = key;
-        currentSort.dir = 1;
-    }
+    currentSort.dir = currentSort.key === key ? -currentSort.dir : 1;
+    currentSort.key = key;
 
     const sorted = [...productsCache].sort((a, b) => {
-        let av = a[key] ?? "";
-        let bv = b[key] ?? "";
-
-        const an = Number(av);
-        const bn = Number(bv);
-
-        if (!isNaN(an) && !isNaN(bn)) return (an - bn) * currentSort.dir;
-
-        av = String(av).toLowerCase();
-        bv = String(bv).toLowerCase();
-
-        return av < bv ? -1 * currentSort.dir : av > bv ? 1 * currentSort.dir : 0;
+        const av = a[key] ?? "";
+        const bv = b[key] ?? "";
+        if (!isNaN(av) && !isNaN(bv)) return (av - bv) * currentSort.dir;
+        return String(av).localeCompare(String(bv)) * currentSort.dir;
     });
 
     updateRows(sorted);
@@ -197,85 +140,69 @@ function sortTable(key) {
 
 function updateRows(list) {
     const tbody = document.querySelector("#productsTable tbody");
-    tbody.innerHTML = list.map((p) => rowTemplate(p)).join("");
+    tbody.innerHTML = list.map(rowTemplate).join("");
     attachRowEvents();
 }
 
 function attachRowEvents() {
-    document.querySelectorAll(".btn-edit").forEach((btn) =>
-        btn.addEventListener("click", () => {
-            window.location.href = `edit_product.html?id=${btn.dataset.id}`;
-        })
+    document.querySelectorAll(".btn-edit").forEach(btn =>
+        btn.onclick = () =>
+            window.location.href = `edit_product.html?id=${btn.dataset.id}`
     );
 
-    document.querySelectorAll(".btn-delete").forEach((btn) =>
-        btn.addEventListener("click", async () => {
+    document.querySelectorAll(".btn-delete").forEach(btn =>
+        btn.onclick = async () => {
             if (!confirm("Delete product?")) return;
-
-            try {
-                await ownerRequest(`/shop-owner/products/${btn.dataset.id}`, "DELETE");
-                productsCache = productsCache.filter((p) => p._id !== btn.dataset.id);
-                updateRows(productsCache);
-            } catch (err) {
-                alert("Delete failed: " + err.message);
-            }
-        })
+            await apiRequest(`/shop-owner/products/${btn.dataset.id}`, "DELETE");
+            productsCache = productsCache.filter(p => p._id !== btn.dataset.id);
+            updateRows(productsCache);
+        }
     );
 }
 
 // ----------------------------------------------
-//  EXPORT CSV
+// EXPORT CSV
 // ----------------------------------------------
 function exportCSV() {
-    const rows = Array.from(document.querySelectorAll("#productsTable tbody tr"));
-    if (!rows.length) return alert("No products to export");
+    const rows = document.querySelectorAll("#productsTable tbody tr");
+    if (!rows.length) return alert("No products");
 
     const csv = [["ID", "Title", "Price", "Stock", "Created"]];
-
-    rows.forEach((row) => {
-        const cells = row.querySelectorAll("td");
-        csv.push([
-            cells[0].textContent,
-            cells[1].textContent,
-            cells[2].textContent,
-            cells[3].textContent,
-            cells[4].textContent,
-        ]);
+    rows.forEach(r => {
+        csv.push([...r.children].slice(0, 5).map(td => td.textContent));
     });
 
-    const csvStr = csv.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
-    const blob = new Blob([csvStr], { type: "text/csv" });
+    const blob = new Blob(
+        [csv.map(r => r.map(c => `"${c}"`).join(",")).join("\n")],
+        { type: "text/csv" }
+    );
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `products_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = "products.csv";
     a.click();
 }
 
 // ----------------------------------------------
-//  NOTIFICATIONS
+// NOTIFICATIONS
 // ----------------------------------------------
 async function loadUnreadCount() {
     try {
-        const data = await ownerRequest("/notifications/owner/me");
-        const unread = data.filter((n) => !n.read).length;
-        set("notifCount", unread);
-    } catch (err) {
-        console.error("Notif load failed:", err);
-    }
+        const notes = await apiRequest("/notifications/owner/me");
+        set("notifCount", notes.filter(n => !n.read).length);
+    } catch {}
 }
 
 // ----------------------------------------------
-//  LOGOUT
+// LOGOUT
 // ----------------------------------------------
-function logout() {
+window.logout = () => {
     localStorage.removeItem("shop_owner_token");
     window.location.href = "login.html";
-}
-window.logout = logout;
+};
 
 // ----------------------------------------------
-//  INIT
+// INIT
 // ----------------------------------------------
 loadDashboard();
 loadProductsTable();

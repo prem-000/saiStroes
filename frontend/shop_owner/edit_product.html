@@ -49,60 +49,75 @@
     </section>
 
     <script type="module">
-        import { API_BASE } from "../js/api.js";
+        import { apiRequest } from "../js/api.js";
 
         const editId = new URLSearchParams(window.location.search).get("id");
         const token = localStorage.getItem("shop_owner_token");
 
+        if (!token) {
+            alert("Login required");
+            window.location.href = "login.html";
+        }
+
+        // ----------------------------------------------
+        // LOAD PRODUCT
+        // ----------------------------------------------
         async function loadProduct() {
-            if (!token) return alert("Login required");
+            try {
+                const products = await apiRequest("/shop-owner/products/my");
+                const p = products.find(x => x.id === editId);
 
-            const res = await fetch(API_BASE + "/shop-owner/products/my", {
-                headers: { Authorization: "Bearer " + token }
-            });
+                if (!p) {
+                    alert("Product not found");
+                    return;
+                }
 
-            const products = await res.json();
-            const p = products.find(x => x.id === editId);
+                document.getElementById("title").value = p.title;
+                document.getElementById("description").value = p.description || "";
+                document.getElementById("price").value = p.price;
+                document.getElementById("stock").value = p.stock;
+                document.getElementById("category").value = p.category || "";
+                document.getElementById("image").value = p.image || "";
 
-            if (!p) return alert("Product not found");
-
-            document.getElementById("title").value = p.title;
-            document.getElementById("description").value = p.description;
-            document.getElementById("price").value = p.price;
-            document.getElementById("stock").value = p.stock;
-            document.getElementById("category").value = p.category || "";
-            document.getElementById("image").value = p.image || "";
+            } catch (err) {
+                alert("Failed to load product");
+                console.error(err);
+            }
         }
 
         loadProduct();
 
-        document.getElementById("editProductForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
+        // ----------------------------------------------
+        // UPDATE PRODUCT
+        // ----------------------------------------------
+        document
+            .getElementById("editProductForm")
+            .addEventListener("submit", async (e) => {
+                e.preventDefault();
 
-            const payload = {
-                title: title.value,
-                description: description.value,
-                price: Number(price.value),
-                stock: Number(stock.value),
-                category: category.value.trim().toLowerCase(),
-                image: image.value
-            };
+                const payload = {
+                    title: title.value,
+                    description: description.value,
+                    price: Number(price.value),
+                    stock: Number(stock.value),
+                    category: category.value.trim().toLowerCase(),
+                    image: image.value
+                };
 
-            const res = await fetch(API_BASE + `/shop-owner/products/${editId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + token
-                },
-                body: JSON.stringify(payload)
+                try {
+                    await apiRequest(
+                        `/shop-owner/products/${editId}`,
+                        "PUT",
+                        payload
+                    );
+
+                    alert("Updated successfully");
+                    window.location.href = "my_products.html";
+
+                } catch (err) {
+                    alert(err.message || "Failed to update product");
+                }
             });
-
-            const data = await res.json();
-            if (!res.ok) return alert(data.detail || "Failed to update");
-
-            alert("Updated successfully");
-            window.location.href = "my_products.html";
-        });
     </script>
 
 </body>
