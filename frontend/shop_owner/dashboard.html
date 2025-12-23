@@ -15,12 +15,13 @@
         <h2>Shop Owner Dashboard</h2>
 
         <div class="nav-links">
-            <a href="dashboard.html">Dashboard</a>
+            
             <a href="orders.html">Orders</a>
             <a href="add_product.html">Add Product</a>
             <a href="notifications.html">Notifications</a>
             <a href="edit_product.html">Edit Product</a>
             <a href="my_products.html">My Products</a>
+            <a href="login.html">login</a>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </nav>
@@ -31,12 +32,20 @@
 
     <!-- 📌 DASHBOARD SUMMARY BOXES -->
     <section class="dashboard-container">
+        <header>
+            <div class="stat-card">
+                <h2>Hand cash amounts are shown strictly for analytical purposes only.</h2>
+                <h2>They are not credited to the shop owner's account balance.</h2>
+            </div>
+        </header>
 
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Total Orders</h3>
                 <p id="totalOrders">0</p>
             </div>
+
+            
 
             <div class="stat-card">
                 <h3>Total Revenue</h3>
@@ -57,6 +66,7 @@
                 <h3>Revenue (Last 30 Days)</h3>
                 <p id="monthlyRevenue">₹0</p>
             </div>
+
         </div>
 
     </section>

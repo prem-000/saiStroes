@@ -67,6 +67,10 @@ async function loadDashboard() {
         set("itemsSold", data.total_items_sold);
         set("weeklyRevenue", "₹" + data.weekly_revenue);
         set("monthlyRevenue", "₹" + data.monthly_revenue);
+        // set("note" (
+        //     "Hand cash amounts are shown strictly for analytical purposes only. ",
+        //     "They are not credited to the shop owner's account balance."
+        // ))
 
     } catch (err) {
         console.error("Dashboard error:", err);

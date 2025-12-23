@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sai Stores</title>
+<style>
+  :root{
+    --bg-day: linear-gradient(180deg,#fbfdff,#f4f7fb);
+    --bg-night: linear-gradient(180deg,#071021,#061826);
+    --card-bg:#ffffff;
+    --text-day:#0b1220;
+    --text-night:#e8f6ff;
+    --accent:#ff6b4d;
+    --muted:#6b7280;
+    --glass: rgba(255,255,255,0.35);
+    --neon: #ff5f8a;
+  }
+
+  /* base layout */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    background:var(--bg-day);
+    color:var(--text-day);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow:hidden;
+  }
+
+  .wrap{height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .card{width:min(1150px,96vw);border-radius:12px;background:var(--card-bg);padding:16px;display:flex;gap:18px;box-shadow:0 24px 60px rgba(9,18,33,0.06)}
+  .visual{flex:1;min-width:480px;height:460px;border-radius:10px;background:transparent;overflow:hidden;position:relative;padding:10px}
+  .controls{width:320px;display:flex;flex-direction:column;gap:12px;align-items:stretch}
+  .title{font-size:20px;font-weight:800}
+  .subtitle{font-size:13px;color:var(--muted)}
+
+  .btn{padding:12px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#ff8a5b);color:white;font-weight:700;cursor:pointer}
+  .btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(9,18,33,0.06)}
+
+  /* loader */
+  #loaderOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(3,6,12,0.06);z-index:90}
+  .loaderCard{width:min(880px,92vw);background:#fff;padding:16px;border-radius:12px;display:flex;gap:12px;align-items:center;box-shadow:0 30px 70px rgba(2,6,23,0.08)}
+  .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden;width:100%}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#ff8a5b);transition:width linear}
+
+  /* animations */
+  @keyframes cloudMove { from{transform:translateX(-300px)} to{transform:translateX(1500px)} }
+  .cloud{animation:cloudMove 24s linear infinite;opacity:0.9}
+
+  @keyframes lanternFloat { 0%{transform:translateY(0)} 50%{transform:translateY(-6px)} 100%{transform:translateY(0)} }
+  .lanternFloat{animation:lanternFloat 3s ease-in-out infinite}
+
+  /* night mode */
+  .night { background:var(--bg-night); color:var(--text-night) }
+  .night .card { background: rgba(6,12,22,0.6); box-shadow: 0 30px 80px rgba(0,0,0,0.6) }
+  .night .subtitle { color: #9fb7d6 }
+
+  /* neon glow filter helper (for use on elements) */
+  .neon {
+    filter: drop-shadow(0 0 8px rgba(255,95,138,0.9))
+            drop-shadow(0 0 18px rgba(255,95,138,0.6));
+  }
+
+  /* small responsive */
+  @media (max-width:980px){
+    .card{flex-direction:column}
+    .controls{width:100%}
+    .visual{order:2;height:360px}
+  }
+
+  /* tiny utility */
+  .muted{ color:var(--muted);font-size:12px }
+
+  /* wheel spoke stroke for bicycle */
+  .wheel-spoke { stroke: rgba(255,255,255,0.9); stroke-width:1.2; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="card" role="application" aria-label="Sai Stores panel selector">
+    <!-- VISUAL -->
+    <div class="visual" id="visualRoot" aria-hidden="false">
+      <!-- All visuals are SVG to keep crisp minimal look -->
+      <svg viewBox="0 0 1200 600" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+
+        <defs>
+          <!-- soft glass gradient -->
+          <linearGradient id="gGlass" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0.65"/>
+            <stop offset="1" stop-color="#e6f2ff" stop-opacity="0.35"/>
+          </linearGradient>
+
+          <!-- subtle shadow -->
+          <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="10" stdDeviation="22" flood-color="#000" flood-opacity="0.12"/>
+          </filter>
+
+          <!-- neon glow (for night) -->
+          <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge>
+              <feMergeNode in="b"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- MINIMAL CLOUDS (moving) -->
+        <g class="cloud" style="transform-origin:0 0;">
+          <ellipse cx="120" cy="70" rx="72" ry="26" fill="#ffffff" opacity="0.95"/>
+          <ellipse cx="180" cy="70" rx="44" ry="18" fill="#ffffff" opacity="0.95"/>
+        </g>
+        <g class="cloud" style="transform-origin:0 0; animation-delay:8s;">
+          <ellipse cx="260" cy="130" rx="88" ry="30" fill="#ffffff" opacity="0.9"/>
+          <ellipse cx="330" cy="130" rx="52" ry="20" fill="#ffffff" opacity="0.9"/>
+        </g>
+
+        <!-- DEVICE PANEL OUTLINE (soft) -->
+        <g transform="translate(72,20) scale(0.86)">
+          <rect x="60" y="40" width="980" height="520" rx="36" fill="#fff" stroke="rgba(6,12,22,0.03)"/>
+          <rect x="96" y="86" width="904" height="444" rx="24" fill="#f7fbff"/>
+        </g>
+
+        <!-- -------------------------------------------
+             SHOP + GROUND + GAP
+             Minimal premium facade with layered roof,
+             a roof dragon, glass door, neon strip, plants
+             ------------------------------------------- -->
+
+        <g id="shopArea" transform="translate(300,120)">
+
+          <!-- small ground gap in front of shop: lighter panel -->
+          <rect x="-40" y="270" width="440" height="36" rx="8" fill="#f2f6fb"/>
+
+          <!-- SHOP: layered minimalist roof (Japanese/Chinese blend) -->
+          <!-- Back curved layer -->
+          <path d="M -30 84 Q 180 8 420 84 L 380 110 Q 180 36 0 110 Z"
+                fill="#1f2a3a" opacity="0.06"/>
+          <!-- Main roof -->
+          <path d="M -30 78 Q 180 -6 420 78 L 380 100 Q 180 24 0 100 Z"
+                fill="#c62828" stroke="#7a1414" stroke-width="3" filter="url(#softShadow)"/>
+          <!-- roof edge thin gold -->
+          <path d="M -10 92 Q 180 18 400 92" stroke="#ffd86b" stroke-width="5" fill="none"/>
+
+          <!-- roof dragon statue - simplified minimal silhouette -->
+          <g transform="translate(170,10) scale(0.9)">
+            <path d="M10 28 C14 18,32 8,50 12 C62 14,68 26,80 26 C74 34,56 32,48 36 C40 40,18 46,10 40 Z"
+                  fill="#2b2b2b" opacity="0.98"/>
+            <!-- stylized tail -->
+            <path d="M4 36 C-6 44,8 56,20 54" stroke="#2b2b2b" stroke-width="3" fill="none"/>
+          </g>
+
+          <!-- Minimal facade (glass + wooden thin frame) -->
+          <rect x="0" y="110" width="360" height="156" rx="10" fill="#ffffff" stroke="#e5d3c1" stroke-width="2"/>
+
+          <!-- narrow wooden top trim -->
+          <rect x="0" y="110" width="360" height="10" rx="4" fill="#b77a45"/>
+
+          <!-- large centered glass door (minimal, tall) -->
+          <rect x="140" y="142" width="80" height="112" rx="8" fill="url(#gGlass)" stroke="#cddff0" stroke-width="2"/>
+
+          <!-- slim neon strip above door (for night) -->
+          <rect id="neonStrip" x="110" y="126" width="140" height="8" rx="4" fill="#ffecec" opacity="0.92"/>
+
+          <!-- signboard: minimal rectangle with simple typography -->
+          <rect x="110" y="118" width="140" height="28" rx="6" fill="#182434" opacity="0.06"/>
+          <text x="180" y="138" text-anchor="middle" font-weight="700" font-size="14" fill="#fff" opacity="0.95">SAI STORES</text>
+
+          <!-- SIDE POTS: simple stylized plants near door -->
+          <g transform="translate(110,250)">
+            <rect x="0" y="0" width="18" height="14" rx="4" fill="#c5a07a"/>
+            <ellipse cx="9" cy="-8" rx="12" ry="10" fill="#4aa56f"/>
+          </g>
+          <g transform="translate(332,250)">
+            <rect x="0" y="0" width="18" height="14" rx="4" fill="#c5a07a"/>
+            <ellipse cx="9" cy="-8" rx="12" ry="10" fill="#4aa56f"/>
+          </g>
+
+          <!-- HANGING LANTERNS (two minimal) -->
+          <g class="lanternFloat" transform="translate(36,120)">
+            <line x1="0" y1="0" x2="0" y2="26" stroke="#2b2b2b" stroke-width="3"/>
+            <ellipse cx="0" cy="42" rx="12" ry="16" fill="#d83b3b" stroke="#6f1515" stroke-width="2" />
+            <rect x="-1" y="50" width="2" height="8" fill="#6f1515"/>
+          </g>
+
+          <g class="lanternFloat" transform="translate(324,120)" style="animation-delay:0.6s;">
+            <line x1="0" y1="0" x2="0" y2="26" stroke="#2b2b2b" stroke-width="3"/>
+            <ellipse cx="0" cy="42" rx="12" ry="16" fill="#d83b3b" stroke="#6f1515" stroke-width="2" />
+            <rect x="-1" y="50" width="2" height="8" fill="#6f1515"/>
+          </g>
+
+        </g> <!-- end shopArea -->
+
+        <!-- noodle stall to the left of shop (minimal) -->
+        <g transform="translate(160,300)">
+          <!-- stall base -->
+          <rect x="-100" y="0" width="120" height="78" rx="8" fill="#fffdf9" stroke="#e9d6c1"/>
+          <!-- canopy -->
+          <path d="M-102 0 Q -50 -28  -2 0 Z" fill="#d83b3b" stroke="#9a1b1b"/>
+          <text x="-44" y="28" font-size="12" fill="#fff" font-weight="700">NOODLE</text>
+          <!-- small bowl -->
+          <g transform="translate(-40,40)">
+            <ellipse cx="0" cy="6" rx="18" ry="8" fill="#f7e7d1" stroke="#e6c9a3"/>
+            <path d="M-6 2 C -4 -6, 4 -6, 6 2" stroke="#e6b48a" stroke-width="2" fill="none"/>
+            <!-- steam -->
+            <path d="M-6 -6 C -8 -12, -2 -18, -2 -22" stroke="#ddd7d0" stroke-width="2" fill="none" opacity="0.9"/>
+            <path d="M4 -6 C 2 -12, 8 -18, 8 -22" stroke="#ddd7d0" stroke-width="2" fill="none" opacity="0.9"/>
+          </g>
+        </g>
+
+        <!-- road in front, separated by gap -->
+        <g transform="translate(200,360)">
+          <rect width="760" height="90" rx="10" fill="#f1f4f8"/>
+          <rect y="52" width="760" height="8" rx="4" fill="#deeaf4"/>
+          <!-- lane dashes -->
+          <g fill="#fff" opacity="0.7">
+            <rect x="10" y="36" width="60" height="6" rx="3"/>
+            <rect x="90" y="36" width="60" height="6" rx="3"/>
+            <rect x="170" y="36" width="60" height="6" rx="3"/>
+            <rect x="250" y="36" width="60" height="6" rx="3"/>
+            <rect x="330" y="36" width="60" height="6" rx="3"/>
+            <rect x="410" y="36" width="60" height="6" rx="3"/>
+            <rect x="490" y="36" width="60" height="6" rx="3"/>
+            <rect x="570" y="36" width="60" height="6" rx="3"/>
+          </g>
+        </g>
+
+        <!-- path for vehicles -->
+        <path id="roadPath" d="M220 420 C300 410,420 405,540 405 C660 405,780 410,920 425" fill="none"/>
+
+        <!-- ---------------------------
+             VEHICLES: minimal premium designs
+             Each vehicle group uses proper wheels (rim + tyre),
+             rounded body, subtle shadow.
+             Also includes bicycle.
+             --------------------------- -->
+
+        <!-- Mini rounded car -->
+        <g id="car1">
+          <g transform="translate(-40,-22)">
+            <!-- shadow -->
+            <ellipse cx="55" cy="58" rx="36" ry="9" fill="rgba(0,0,0,0.12)"/>
+            <!-- body -->
+            <rect x="12" y="12" width="86" height="36" rx="16" fill="#ff7a66" stroke="#d4553f" />
+            <rect x="28" y="2" width="52" height="22" rx="10" fill="#fff3f1"/>
+            <!-- wheels -->
+            <g transform="translate(32,58)">
+              <circle cx="0" cy="0" r="11" fill="#111"/>
+              <circle cx="0" cy="0" r="6" fill="#c9c9c9"/>
+            </g>
+            <g transform="translate(82,58)">
+              <circle cx="0" cy="0" r="11" fill="#111"/>
+              <circle cx="0" cy="0" r="6" fill="#c9c9c9"/>
+            </g>
+          </g>
+          <animateMotion dur="6.4s" repeatCount="indefinite" rotate="auto">
+            <mpath xlink:href="#roadPath"/>
+          </animateMotion>
+        </g>
+
+        <!-- Compact EV style (soft) -->
+        <g id="car2">
+          <g transform="translate(-48,-18)">
+            <ellipse cx="62" cy="62" rx="40" ry="10" fill="rgba(0,0,0,0.10)"/>
+            <rect x="10" y="16" width="92" height="34" rx="16" fill="#50c7d9" stroke="#2fa6b6"/>
+            <rect x="22" y="6" width="68" height="20" rx="10" fill="#effdfa"/>
+            <g transform="translate(36,62)">
+              <circle cx="0" cy="0" r="12" fill="#111"/>
+              <circle cx="0" cy="0" r="6" fill="#d0d0d0"/>
+            </g>
+            <g transform="translate(88,62)">
+              <circle cx="0" cy="0" r="12" fill="#111"/>
+              <circle cx="0" cy="0" r="6" fill="#d0d0d0"/>
+            </g>
+          </g>
+          <animateMotion dur="7.6s" begin="0.6s" repeatCount="indefinite" rotate="auto">
+            <mpath xlink:href="#roadPath"/>
+          </animateMotion>
+        </g>
+
+        <!-- Delivery Van (rounded) -->
+        <g id="van1">
+          <g transform="translate(-60,-26)">
+            <ellipse cx="70" cy="72" rx="46" ry="10" fill="rgba(0,0,0,0.09)"/>
+            <rect x="10" y="6" width="112" height="44" rx="12" fill="#ffd86b" stroke="#d6ac45"/>
+            <rect x="24" y="16" width="36" height="20" rx="6" fill="#fffbe9"/>
+            <text x="72" y="36" font-size="10" font-weight="700" fill="#8b5a00" text-anchor="middle">EXP</text>
+            <g transform="translate(36,76)">
+              <circle r="12" fill="#111"/><circle r="6" fill="#d5d5d5"/>
+            </g>
+            <g transform="translate(104,76)">
+              <circle r="12" fill="#111"/><circle r="6" fill="#d5d5d5"/>
+            </g>
+          </g>
+          <animateMotion dur="9.6s" begin="1.2s" repeatCount="indefinite" rotate="auto">
+            <mpath xlink:href="#roadPath"/>
+          </animateMotion>
+        </g>
+
+        <!-- Pickup -->
+        <g id="truck1">
+          <g transform="translate(-64,-20)">
+            <ellipse cx="70" cy="68" rx="46" ry="9" fill="rgba(0,0,0,0.08)"/>
+            <rect x="10" y="12" width="120" height="34" rx="14" fill="#7aa6ff" stroke="#4e78d6"/>
+            <rect x="24" y="2" width="48" height="24" rx="10" fill="#eff6ff"/>
+            <rect x="82" y="18" width="26" height="12" rx="4" fill="#ffd6a5"/>
+            <g transform="translate(36,72)"><circle r="12" fill="#111"/><circle r="6" fill="#d0d0d0"/></g>
+            <g transform="translate(112,72)"><circle r="12" fill="#111"/><circle r="6" fill="#d0d0d0"/></g>
+          </g>
+          <animateMotion dur="8.4s" begin="0.4s" repeatCount="indefinite" rotate="auto">
+            <mpath xlink:href="#roadPath"/>
+          </animateMotion>
+        </g>
+
+        <!-- Tuk / Compact -->
+        <g id="tuk1">
+          <g transform="translate(-48,-14)">
+            <ellipse cx="36" cy="54" rx="26" ry="7" fill="rgba(0,0,0,0.10)"/>
+            <rect x="0" y="8" width="72" height="26" rx="10" fill="#8be28b" stroke="#58a858"/>
+            <rect x="10" y="-2" width="52" height="20" rx="8" fill="#f6fff6"/>
+            <g transform="translate(16,58)"><circle r="10" fill="#111"/><circle r="5" fill="#cfcfcf"/></g>
+            <g transform="translate(52,58)"><circle r="10" fill="#111"/><circle r="5" fill="#cfcfcf"/></g>
+          </g>
+          <animateMotion dur="5.8s" begin="1.8s" repeatCount="indefinite" rotate="auto">
+            <mpath xlink:href="#roadPath"/>
+          </animateMotion>
+        </g>
+
+        <!-- Mini Bus -->
+        <g id="bus1">
+          <g transform="translate(-68,-30)">
+            <ellipse cx="78" cy="82" rx="52" ry="12" fill="rgba(0,0,0,0.09)"/>
+            <rect x="10" y="10" width="132" height="44" rx="18" fill="#cda4ff" stroke="#8d6dd6"/>
+            <rect x="22" y="20" width="34" height="18" rx="6" fill="#fff"/>
+            <rect x="66" y="20" width="34" height="18" rx="6" fill="#fff"/>
+            <g transform="translate(44,86)"><circle r="12" fill="#111"/><circle r="6" fill="#d0d0d0"/></g>
+            <g transform="translate(116,86)"><circle r="12" fill="#111"/><circle r="6" fill="#d0d0d0"/></g>
+          </g>
+          <animateMotion dur="10s" begin="0.9s" repeatCount="indefinite" rotate="auto">
+            <mpath xlink:href="#roadPath"/>
+          </animateMotion>
+        </g>
+
+        <!-- BICYCLE (cycle) with visible spokes -->
+        <g id="cycle1">
+          <g transform="translate(-30,-28) scale(1)">
+            <!-- little shadow -->
+            <ellipse cx="68" cy="88" rx="22" ry="6" fill="rgba(0,0,0,0.08)"/>
+            <!-- frame simplified -->
+            <line x1="40" y1="64" x2="72" y2="64" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+            <line x1="56" y1="44" x2="56" y2="64" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+            <line x1="72" y1="64" x2="86" y2="46" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+            <!-- saddle -->
+            <rect x="52" y="36" width="14" height="4" rx="2" fill="#333"/>
+            <!-- wheels -->
+            <g transform="translate(40,88)">
+              <circle r="16" fill="#111"/>
+              <circle r="7.5" fill="#cfcfcf"/>
+              <!-- spokes -->
+              <g stroke="#111" stroke-width="0.8">
+                <line x1="0" y1="-7.5" x2="0" y2="7.5"/>
+                <line x1="-6" y1="-5" x2="6" y2="5"/>
+                <line x1="-6" y1="5" x2="6" y2="-5"/>
+              </g>
+            </g>
+            <g transform="translate(88,88)">
+              <circle r="16" fill="#111"/>
+              <circle r="7.5" fill="#cfcfcf"/>
+              <g stroke="#111" stroke-width="0.8">
+                <line x1="0" y1="-7.5" x2="0" y2="7.5"/>
+                <line x1="-6" y1="-5" x2="6" y2="5"/>
+                <line x1="-6" y1="5" x2="6" y2="-5"/>
+              </g>
+            </g>
+          </g>
+          <animateMotion dur="8.4s" begin="0.2s" repeatCount="indefinite" rotate="auto">
+            <mpath xlink:href="#roadPath"/>
+          </animateMotion>
+        </g>
+
+      </svg>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls" aria-hidden="false">
+      <div>
+        <div class="title">Sai Stores</div>
+        <!-- <div class="subtitle">Minimal Japanese-Chinese blend — night mode, neon, dragon, noodle stall, vehicles & cycle</div> -->
+      </div>
+
+      <button class="btn" onclick="startPanel('user')">User Panel</button>
+      <button class="btn" onclick="startPanel('owner')">Shop Owner Panel</button>
+      <button class="btn" onclick="startPanel('admin')">Admin Panel</button>
+
+      <button id="nightToggle" class="btn secondary">Toggle Night Mode</button>
+      <!-- <div class="muted">Note: Night mode activates neon glow, lantern glow, and deep background.</div> -->
+    </div>
+  </div>
+</div>
+
+<!-- LOADER -->
+<div id="loaderOverlay" aria-hidden="true">
+  <div class="loaderCard" role="status" aria-live="polite">
+    <div style="width:64px;height:64px;border-radius:10px;background:linear-gradient(180deg,var(--accent),#ff8a5b)"></div>
+    <div style="flex:1;">
+      <div style="font-weight:700;margin-bottom:8px">Preparing panel…</div>
+      <div class="progress"><div id="progressBar" class="bar"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Routing paths (kept same) */
+const PATHS = { user:'./user/products.html', owner:'./shop_owner/dashboard.html', admin:'./admin/dashboard.html' };
+
+/* loader + navigation */
+function startPanel(role){
+  const overlay = document.getElementById('loaderOverlay');
+  overlay.style.display = 'flex';
+  overlay.setAttribute('aria-hidden','false');
+  const bar = document.getElementById('progressBar');
+  bar.style.width = '0%';
+  bar.style.transition = `width 1400ms linear`;
+  requestAnimationFrame(()=> bar.style.width = '100%');
+  setTimeout(()=> {
+    overlay.style.display = 'none';
+    overlay.setAttribute('aria-hidden','true');
+    window.location.href = PATHS[role] || PATHS.user;
+  }, 1400);
+}
+
+/* Night mode toggle: toggles class on body and applies neon glow to elements */
+const nightToggle = document.getElementById('nightToggle');
+let isNight = false;
+nightToggle.addEventListener('click', ()=> {
+  isNight = !isNight;
+  if(isNight){
+    document.documentElement.classList.add('night');
+    document.body.classList.add('night');
+    // apply neon effect: tint neon strip, lanterns glow
+    applyNightEffects(true);
+    nightToggle.textContent = 'Switch to Day Mode';
+  } else {
+    document.documentElement.classList.remove('night');
+    document.body.classList.remove('night');
+    applyNightEffects(false);
+    nightToggle.textContent = 'Toggle Night Mode';
+  }
+});
+
+function applyNightEffects(on){
+  // visual root svg
+  const svg = document.querySelector('.visual svg');
+  if(!svg) return;
+  // neon strip
+  const neonStrip = svg.querySelector('#neonStrip');
+  if(neonStrip){
+    if(on){
+      neonStrip.setAttribute('fill', '#ff5f8a');
+      neonStrip.classList.add('neon');
+      neonStrip.style.filter = 'url(#neonGlow)';
+    } else {
+      neonStrip.setAttribute('fill', '#ffecec');
+      neonStrip.classList.remove('neon');
+      neonStrip.style.filter = '';
+    }
+  }
+  // lanterns: increase brightness / add glow
+  const lanterns = svg.querySelectorAll('ellipse[fill="#d83b3b"], ellipse[fill="#e33131"]');
+  lanterns.forEach(l => {
+    if(on){
+      l.setAttribute('fill','#ff4d4d');
+      l.style.filter = 'drop-shadow(0 0 8px rgba(255,77,77,0.9))';
+    } else {
+      l.setAttribute('fill', l.getAttribute('data-original') || l.getAttribute('fill'));
+      l.style.filter = '';
+    }
+  });
+
+  // add subtle tint to scene in night
+  if(on){
+    svg.style.filter = 'brightness(0.85) saturate(1.05)';
+  } else {
+    svg.style.filter = '';
+  }
+}
+
+/* start in day mode by default */
+applyNightEffects(false);
+
+</script>
+</body>
+</html>

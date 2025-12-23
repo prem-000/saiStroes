@@ -27,18 +27,19 @@ async def owner_summary(owner=Depends(owner_auth)):
 
     total_revenue = 0.0
     total_items_sold = 0
+    weekly_revenue = 0.0
+    monthly_revenue = 0.0
 
     now = datetime.utcnow()
     week_ago = now - timedelta(days=7)
     month_ago = now - timedelta(days=30)
 
-    weekly_revenue = 0.0
-    monthly_revenue = 0.0
-
     async for o in orders_collection.find({
         "items.owner_id": owner_id,
         "status": {"$ne": "cancelled"}
     }):
+
+        order_total = 0.0
 
         for it in o.get("items", []):
             if str(it.get("owner_id")) == owner_id:
@@ -46,23 +47,21 @@ async def owner_summary(owner=Depends(owner_auth)):
                 price = float(it.get("price", 0))
                 subtotal = qty * price
 
-                total_revenue += subtotal
+                order_total += subtotal
                 total_items_sold += qty
 
-        # -------------------------
-        # FIXED DATE HANDLING
-        # -------------------------
-        created_at = o.get("created_at")
+        total_revenue += order_total
 
+        # ----- DATE HANDLING -----
+        created_at = o.get("created_at")
         if isinstance(created_at, str):
             created_at = _parse_iso(created_at)
 
         if isinstance(created_at, datetime):
             if created_at >= week_ago:
-                weekly_revenue += subtotal
-
+                weekly_revenue += order_total
             if created_at >= month_ago:
-                monthly_revenue += subtotal
+                monthly_revenue += order_total
 
     return {
         "total_orders": total_orders,
@@ -70,7 +69,13 @@ async def owner_summary(owner=Depends(owner_auth)):
         "total_items_sold": total_items_sold,
         "weekly_revenue": round(weekly_revenue, 2),
         "monthly_revenue": round(monthly_revenue, 2),
+        "monthly_revenue": round(monthly_revenue, 2),
+        "note": (
+            "Hand cash amounts are shown strictly for analytical purposes only. "
+            "They are not credited to the shop owner's account balance."
+        )
     }
+
 
 
 
