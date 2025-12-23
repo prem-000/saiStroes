@@ -1,4 +1,5 @@
-export const API_BASE = "http://127.0.0.1:8000";
+export const BASE_URL = "https://saistroes-b7xu.onrender.com";
+
 
 // Generic API request helper (AUTO-TOKEN)
 export async function apiRequest(url, method = "GET", data = null) {
