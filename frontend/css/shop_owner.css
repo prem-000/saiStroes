@@ -736,3 +736,102 @@ body {
     color: white;
     margin-left: 10px;
 }
+
+
+@media (max-width: 768px) {
+
+  /* ===== GENERAL ===== */
+  body {
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* remove fixed widths */
+  .auth-card,
+  .form-card,
+  .product-card,
+  .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* reduce aggressive padding */
+  .dashboard-container,
+  .orders-wrapper,
+  .order-details-container,
+  .form-container {
+    padding: 14px !important;
+  }
+
+  /* ===== TOPBAR ===== */
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .logout-btn {
+    align-self: flex-end;
+  }
+
+  /* ===== GRIDS ===== */
+  .stats-grid,
+  .orders-grid,
+  .products-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ===== TABLES ===== */
+  .excel-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* ===== FORMS ===== */
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .status-select {
+    width: 100%;
+  }
+
+  /* ===== BUTTONS ===== */
+  button,
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .excel-table thead {
+    display: none;
+  }
+
+  .excel-table tr {
+    display: block;
+    margin-bottom: 12px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+  }
+
+  .excel-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+  }
+
+  .excel-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #555;
+  }
+}

@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.0.0/swiper-bundle.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <link rel="stylesheet" href="../css/user/products.css">
 </head>
@@ -27,19 +28,24 @@
             </div>
         </div>
 
-        <div class="nav-right">
+       <div class="nav-right">
+
             <a href="cart.html" class="nav-icon cart-link">
-                🛒
+                <i class="fa-solid fa-cart-shopping"></i>
                 <span id="cartCount" class="cart-badge">0</span>
             </a>
 
-            <a href="login.html" class="nav-icon">👤</a>
+            <a href="login.html" class="nav-icon">
+                <i class="fa-solid fa-user-circle"></i>
+            </a>
 
             <a href="notifications.html" class="nav-icon notify-link">
-                🔔
+                <i class="fa-solid fa-bell"></i>
                 <span id="notifCount" class="notif-badge">0</span>
             </a>
+
         </div>
+
     </header>
 
     <br><br><br>
@@ -79,10 +85,23 @@
     <!-- BOTTOM NAV -->
     <nav>
         <div class="bottom-header">
-            <a href="profile.html" class="bh-item">👤 Profile</a>
-            <a href="wishlist.html" class="bh-item">❤️ Wishlist</a>
-            <a href="orders.html" class="bh-item">📦 Orders</a>
+            <div class="bottom-header">
+            <a href="profile.html" class="bh-item">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+
+            <a href="wishlist.html" class="bh-item">
+                <i class="fa-solid fa-heart-circle-plus"></i>
+                <span>Wishlist</span>
+            </a>
+
+            <a href="orders.html" class="bh-item">
+                <i class="fa-solid fa-box-open"></i>
+                <span>Orders</span>
+            </a>
         </div>
+
     </nav>
 
     <!-- MAIN JS -->

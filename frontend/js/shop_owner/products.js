@@ -76,7 +76,7 @@ function renderProducts(products) {
 // GO TO EDIT PAGE
 // ======================================================
 function goEdit(id) {
-    window.location.href = `/shop_owner/edit_product.html?id=${id}`;
+    window.location.href = `/shop-owner/edit_product.html?id=${id}`;
 }
 
 // ======================================================
