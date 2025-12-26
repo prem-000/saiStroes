@@ -363,25 +363,103 @@ body {
     font-weight: 600;
 }
 
-.top-header {
-    width: 100%;
-    background: #4a6cf7;   /* your app primary color */
-    color: white;
-    padding: 16px 20px;
-    text-align: center;
-    font-size: 20px;
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* =========================
+   GLOBAL RESET (IMPORTANT)
+========================= */
+html, body {
+  margin: 0;
+  padding: 0;
 }
+
+/* =========================
+   FIXED / STICKY HEADER
+========================= */
+.top-header {
+  position: sticky;      /* NOT absolute */
+  top: 0;                /* MUST be zero */
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+
+  background: #4a6cf7;
+  color: #fff;
+
+  padding: 14px 16px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+/* Title inside header */
+.top-header h1 {
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
 
 .top-header h1 {
     margin: 0;
     padding: 0;
     font-size: 22px;
 }
+
+/* =========================
+   MOBILE ORDERS FIX
+========================= */
+@media (max-width: 480px) {
+
+  /* Remove desktop centering */
+  .orders-list {
+    max-width: 100%;
+    padding: 0 10px;
+    margin: 0;
+  }
+
+  /* Make cards full width */
+  .order-card {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 12px;
+  }
+
+  /* Product row spacing */
+  .order-product {
+    align-items: flex-start;
+  }
+
+  /* Buttons stack (VERY IMPORTANT) */
+  .btn-view,
+  .btn-wishlist,
+  .btn-delete {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  /* Fix title overlap */
+  .title {
+    position: static;
+    width: 100%;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  /* Reduce order text size slightly */
+  .prod-title {
+    font-size: 14px;
+  }
+
+  .p-qty,
+  .p-price {
+    font-size: 13px;
+  }
+}
+
 
 /* wishlist */
 body {
@@ -752,7 +830,7 @@ body {
 .password-box i {
     position: absolute;
     right: 14px;
-    top: 50%;
+    top: 70%;
     transform: translateY(-50%);
     cursor: pointer;
     color: #6b7280;

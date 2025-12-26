@@ -787,11 +787,79 @@ body {
   }
 
   /* ===== TABLES ===== */
+  /* =========================
+   TABLE – DESKTOP
+========================= */
+.excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.excel-table th,
+.excel-table td {
+  padding: 12px 14px;
+  border: 1px solid #e6e9ef;
+  font-size: 14px;
+  text-align: left;
+}
+
+.excel-table th {
+  background: #f5f7ff;
+  font-weight: 600;
+}
+
+/* =========================
+   TABLE – MOBILE (CARD MODE)
+========================= */
+@media (max-width: 768px) {
+
   .excel-table {
+    border: none;
+  }
+
+  .excel-table thead {
+    display: none;
+  }
+
+  .excel-table tbody,
+  .excel-table tr {
     display: block;
-    overflow-x: auto;
+    width: 100%;
+  }
+
+  .excel-table tr {
+    background: #fff;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+
+  .excel-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border: none;
+    border-bottom: 1px solid #eef1f6;
+    font-size: 15px;
+  }
+
+  .excel-table td:last-child {
+    border-bottom: none;
+  }
+
+  /* label (from data-label attr) */
+  .excel-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+    margin-right: 12px;
     white-space: nowrap;
   }
+}
+
 
   /* ===== FORMS ===== */
   .form-grid {

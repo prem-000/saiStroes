@@ -353,20 +353,30 @@ textarea::placeholder {
    THEME TOGGLE BUTTON
    =========================== */
 .theme-btn {
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--border);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 18px;
+  width: 52px;
+  height: 28px;
+  border-radius: 20px;
+  border: none;
+  background: var(--border);
   cursor: pointer;
+  position: relative;
+  align-self: flex-end;
+}
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.theme-btn::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  transition: transform 0.3s ease;
+}
 
-  transition: background 0.2s ease, transform 0.1s ease;
+[data-theme="dark"] .theme-btn::before {
+  transform: translateX(22px);
 }
 
 /* Tap feedback */

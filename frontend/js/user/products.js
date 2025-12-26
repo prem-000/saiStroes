@@ -74,7 +74,7 @@ async function loadCategorySections() {
 
             productList.innerHTML += `
                 <div class="category-block">
-                    <h3 class="section-title">Fresh Picks: ${category.toUpperCase()}</h3>
+                    <h3 class="section-title"> ${category.toUpperCase()}</h3>
 
                     <div class="scroll-wrapper">
                         <button class="scroll-btn left-btn" onclick="scrollLeftCat('${category}')">&#8249;</button>
