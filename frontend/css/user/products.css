@@ -43,70 +43,104 @@ h2 {
     margin:0;
 }
 
-/* search box centered */
-/* ===== Top bar search ===== */
-.nav-center {
-  flex: 1;
+/* ===== Top bar search container ===== */
+/* ================= HEADER ================= */
+.mobile-header {
+  padding: 8px 10px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* ================= TOP ROW ================= */
+.top-row {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 }
 
-/* Wrapper */
+.logo {
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.05;
+  color: #3b5bfd;
+}
+
+.icons i {
+  font-size: 18px;
+  margin-left: 12px;
+  color: #374151;
+}
+
+/* ================= SEARCH ROW ================= */
+.search-row {
+  margin-top: 6px;
+}
+
+.nav-center {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ================= SEARCH BOX ================= */
 .search-box {
   position: relative;
   width: 100%;
-  max-width: 520px;     /* desktop */
-  margin: 0 12px;
+  max-width: 520px; /* desktop */
 }
 
-/* Input */
-.search-input {
+.search-box input {
   width: 100%;
   height: 42px;
-  padding: 0 44px 0 14px;   /* right space for icon */
-  border-radius: 999px;
+  padding: 0 40px 0 14px;
+  border-radius: 10px;
   border: 1px solid #e5e7eb;
-  background: #fff;
-  font-size: 16px;
-  line-height: 42px;
+  background: #f9fafb;
+  font-size: 15px;
   outline: none;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-/* Icon */
-.search-icon {
+.search-box i {
   position: absolute;
-  right: 14px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
+  font-size: 16px;
   color: #6b7280;
-  pointer-events: none; /* so user can tap input easily */
+  pointer-events: none;
 }
 
-/* ===== Mobile ===== */
-@media (max-width: 600px) {
-  .nav-center {
-    width: 100%;
+/* ================= MOBILE COMPACT ================= */
+@media (max-width: 480px) {
+  .mobile-header {
+    padding: 6px 8px;
+  }
+
+  .logo {
+    font-size: 14px;
+  }
+
+  .icons i {
+    font-size: 17px;
+    margin-left: 10px;
   }
 
   .search-box {
-    max-width: 100%;
-    margin: 0 8px;
+    max-width: none;
   }
 
-  .search-input {
-    height: 44px;
-    padding: 0 46px 0 14px;
-    font-size: 16px; /* prevents zoom */
+  .search-box input {
+    height: 36px;
+    font-size: 14px;
+    padding: 0 36px 0 12px;
+    border-radius: 8px;
   }
 
-  .search-icon {
-    right: 12px;
-    font-size: 18px;
+  .search-box i {
+    font-size: 15px;
   }
 }
+
 
 
 

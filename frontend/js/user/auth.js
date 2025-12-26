@@ -1,57 +1,85 @@
 import { apiRequest } from "../api.js";
 
-// ------------------------------
-// USER REGISTER
-// ------------------------------
+const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
+const emailInput = document.getElementById("email");
+const messageBox = document.getElementById("formMessage");
+const passwordInput = document.getElementById("password");
+const toggle = document.getElementById("togglePassword");
 
-if (registerForm) {
-    registerForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+/* ---------- SESSION ---------- */
+const token = localStorage.getItem("user_token");
+if (token && loginForm) {
+    window.location.href = "products.html";
+}
 
-        const name = document.getElementById("name").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value.trim();
+const savedEmail = localStorage.getItem("user_email");
+if (savedEmail && emailInput) {
+    emailInput.value = savedEmail;
+}
 
-        try {
-            await apiRequest("/auth/register", "POST", {
-                name,
-                email,
-                password,
-            });
-
-            alert("Registration successful!");
-            window.location.href = "login.html";
-        } catch (err) {
-            alert("Registration failed: " + err.message);
+/* ---------- PASSWORD TOGGLE ---------- */
+if (toggle && passwordInput) {
+    toggle.addEventListener("click", () => {
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggle.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            passwordInput.type = "password";
+            toggle.classList.replace("fa-eye-slash", "fa-eye");
         }
     });
 }
 
-// ------------------------------
-// USER LOGIN
-// ------------------------------
-const loginForm = document.getElementById("loginForm");
+/* ---------- MESSAGE ---------- */
+function setMessage(text, type) {
+    if (!messageBox) return;
+    messageBox.textContent = text;
+    messageBox.className = "form-message " + type;
+}
 
-if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
+/* ---------- REGISTER ---------- */
+if (registerForm) {
+    registerForm.addEventListener("submit", async e => {
         e.preventDefault();
 
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value.trim();
+        const name = document.getElementById("name").value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        setMessage("Creating account…", "loading");
 
         try {
-            const res = await apiRequest("/auth/login", "POST", {
-                email,
-                password,
-            });
+            await apiRequest("/auth/register", "POST", { name, email, password });
+            setMessage("Account created. Redirecting…", "success");
+            setTimeout(() => location.href = "login.html", 1200);
+        } catch {
+            setMessage("Registration failed", "error");
+        }
+    });
+}
 
-            localStorage.setItem("user_token", res.token || res.access_token);
+/* ---------- LOGIN ---------- */
+if (loginForm) {
+    loginForm.addEventListener("submit", async e => {
+        e.preventDefault();
 
-            alert("Login successful!");
-            window.location.href = "products.html";
-        } catch (err) {
-            alert("Login failed: " + err.message);
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        setMessage("Checking credentials…", "loading");
+
+        try {
+            const res = await apiRequest("/auth/login", "POST", { email, password });
+            const token = res.token || res.access_token;
+
+            localStorage.setItem("user_token", token);
+            localStorage.setItem("user_email", email);
+
+            setMessage("Logged in. Redirecting…", "success");
+            setTimeout(() => location.href = "products.html", 1000);
+        } catch {
+            setMessage("Invalid email or password", "error");
         }
     });
 }

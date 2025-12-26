@@ -690,6 +690,49 @@ body {
     border-radius: 8px;
   }
 
+  .form-message {
+    margin-top: 12px;
+    font-size: 14px;
+    min-height: 18px;
+    text-align: center;
+}
+
+.form-message.error {
+    color: #ef4444;
+    animation: shake 0.3s ease-in-out;
+}
+
+.form-message.success {
+    color: #22c55e;
+}
+
+.form-message.loading {
+    color: #3b82f6;
+}
+
+/* Loading dots animation */
+.loading::after {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    animation: dots 1.5s steps(3, end) infinite;
+}
+
+@keyframes dots {
+    0% { content: ""; }
+    33% { content: "."; }
+    66% { content: ".."; }
+    100% { content: "..."; }
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    50% { transform: translateX(4px); }
+    75% { transform: translateX(-4px); }
+    100% { transform: translateX(0); }
+}
+
   .excel-table td {
     display: flex;
     justify-content: space-between;
@@ -701,4 +744,40 @@ body {
     font-weight: 600;
     color: #555;
   }
+}
+.password-box {
+    position: relative;
+}
+
+.password-box i {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.password-box i:hover {
+    color: #3b82f6;
+}
+.form-message {
+    margin-top: 12px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.form-message.loading {
+    color: #3b82f6;
+}
+.form-message.loading::after {
+    content: "";
+    animation: dots 1.5s steps(3, end) infinite;
+}
+
+@keyframes dots {
+    0% { content: ""; }
+    33% { content: "."; }
+    66% { content: ".."; }
+    100% { content: "..."; }
 }

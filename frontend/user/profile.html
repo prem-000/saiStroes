@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <title>User Profile</title>
     <link rel="stylesheet" href="../css/profile.css">
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
 </head>
 
 <body>
@@ -46,7 +51,10 @@
                 </div>
             </div>
 
-            <button id="saveBtn" class="btn-primary">Save Profile</button>
+            <button id="saveBtn" class="btn-primary">
+            <span class="btn-text">Save Profile</span>
+            <span class="btn-spinner"></span>
+            </button>
         </div>
 
         <!-- Settings Section -->
@@ -54,10 +62,15 @@
             <h3>Settings</h3>
 
             <!-- CART -->
-            <button class="btn-option" onclick="goToCart()">🛒 Go to Cart</button>
+            <button class="btn-option" onclick="goToCart()">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Go to Cart</span>
+            </button>
 
-            <!-- PAYMENT FAQ -->
-            <button class="btn-option" onclick="toggleFAQ()">💳 Payment Information</button>
+            <button class="btn-option" onclick="toggleFAQ()">
+            <i class="fa-solid fa-credit-card"></i>
+            <span>Payment Information</span>
+            </button>
 
             <!-- FAQ SECTION -->
             <div id="faqSection" class="faq-section" style="display:none;">
@@ -100,8 +113,15 @@
             </div>
 
             <!-- ABOUT & FEEDBACK (INLINE) -->
-            <button class="btn-option" onclick="showAbout()">ℹ️ About Us</button>
-            <button class="btn-option" onclick="showFeedback()">✉️ Feedback</button>
+           <button class="btn-option" onclick="showAbout()">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>About Us</span>
+            </button>
+
+            <button class="btn-option" onclick="showFeedback()">
+            <i class="fa-solid fa-envelope"></i>
+            <span>Feedback</span>
+            </button>
 
             <!-- INLINE INFO BOX -->
             <div id="infoSection" class="info-section" style="display:none;"></div>
