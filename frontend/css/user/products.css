@@ -699,21 +699,44 @@ main { padding-top: 86px; padding-bottom: 80px; } /* adjust if nav sizes change 
     margin-top: -10px;
 }
 
+/* ================= RECOMMENDED PRODUCTS (HORIZONTAL) ================= */
+
 .recommended-section {
-  margin-top: 24px;
+  margin-top: 28px;
 }
 
+/* horizontal scroll container */
 .recommended-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 12px 4px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
-@media (max-width: 480px) {
-  .recommended-list {
-    grid-template-columns: 1fr;
-  }
+/* hide ugly scrollbar (optional) */
+.recommended-list::-webkit-scrollbar {
+  height: 6px;
 }
+.recommended-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 6px;
+}
+
+/* cards must NOT shrink */
+.recommended-list .product-card {
+  flex: 0 0 auto;
+  width: 180px;
+}
+
+/* image sizing */
+.recommended-list .product-img {
+  width: 100%;
+  height: 100px;
+  object-fit: contain;
+}
+
 
 
 /* ===== LOADING STATE ===== */
@@ -779,4 +802,145 @@ main { padding-top: 86px; padding-bottom: 80px; } /* adjust if nav sizes change 
 
 @keyframes spin {
   to { transform: translateY(-50%) rotate(360deg); }
+}
+
+
+/* ================= WHY SHOP SECTION ================= */
+
+.why-shop {
+  padding: 32px 18px;
+  background: #ffffff;
+}
+
+.why-shop .section-title {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.why-shop .section-title span {
+  color: #4a6cf7;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.why-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 16px;
+  text-align: center;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.why-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.08);
+}
+
+.why-card img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.why-card h4 {
+  margin: 8px 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.why-card p {
+  font-size: 13px;
+  color: #4b5563;
+  margin: 4px 0;
+}
+
+.why-card .more {
+  display: none;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.why-card button {
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: #4a6cf7;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* ================= FOOTER ================= */
+
+.site-footer {
+  background: #ffffff;
+  color: #e5e7eb;
+  padding: 26px 18px 90px; /* extra bottom for mobile nav */
+}
+
+.footer-top {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.footer-brand h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #4a6cf7;
+}
+
+.footer-brand p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.footer-social a {
+  color: #e5e7eb;
+  font-size: 20px;
+  margin-left: 14px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-social a:hover {
+  color: #4a6cf7;
+  transform: scale(1.15);
+}
+
+.footer-copy {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 16px;
+  color: #9ca3af;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 600px) {
+  .why-shop {
+    padding: 26px 14px;
+  }
+
+  .footer-top {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-social a {
+    margin: 0 10px;
+  }
 }

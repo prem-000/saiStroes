@@ -1,118 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>SAI STORES | Home</title>
 
-    <title>SAI STORES | Home</title>
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.0.0/swiper-bundle.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <link rel="stylesheet" href="../css/user/products.css">
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="../css/user/products.css">
 </head>
 
 <body>
 
-    <!-- TOP NAV -->
-    <header class="navbar">
-        <div class="nav-left">
-            <h2 class="logo">SAI STORES</h2>
-        </div>
+<!-- ================= TOP NAV ================= -->
+<header class="navbar">
+  <div class="nav-left">
+    <h2 class="logo">SAI STORES</h2>
+  </div>
 
-        <div class="nav-center">
-            <div class="search-box">
-                <input id="searchInput" type="text" placeholder="Search for products..." class="search-input">
-                <i class="fas fa-search search-icon"></i>
-            </div>
-        </div>
+  <div class="nav-center">
+    <div class="search-box">
+      <input id="searchInput" type="text" placeholder="Search for products..." />
+      <i class="fas fa-search"></i>
+    </div>
+  </div>
 
-       <div class="nav-right">
+  <div class="nav-right">
+    <a href="cart.html" class="nav-icon cart-link">
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span id="cartCount" class="cart-badge">0</span>
+    </a>
 
-            <a href="cart.html" class="nav-icon cart-link">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span id="cartCount" class="cart-badge">0</span>
-            </a>
+    <a href="login.html" class="nav-icon">
+      <i class="fa-solid fa-user-circle"></i>
+    </a>
 
-            <a href="login.html" class="nav-icon">
-                <i class="fa-solid fa-user-circle"></i>
-            </a>
+    <a href="notifications.html" class="nav-icon notify-link">
+      <i class="fa-solid fa-bell"></i>
+      <span id="notifCount" class="notif-badge">0</span>
+    </a>
+  </div>
+</header>
 
-            <a href="notifications.html" class="nav-icon notify-link">
-                <i class="fa-solid fa-bell"></i>
-                <span id="notifCount" class="notif-badge">0</span>
-            </a>
+<br><br><br>
 
-        </div>
+<!-- ================= PRODUCTS (AUTO FROM JS) ================= -->
+<div id="productList"></div>
 
-    </header>
+<!-- ================= CATEGORIES ================= -->
+<h2 class="section-title">Shop by Categories</h2>
+<div class="category-grid" id="categoryGrid"></div>
 
-    <br><br><br>
+<!-- ================= WHY SHOP (IMAGE BASED) ================= -->
+<section class="why-shop">
+  <h2 class="section-title">Why Shop with <span>SAI STORES</span></h2>
 
-    <!-- FRESH PICKS SECTION (auto-generated with JS) -->
-    <div id="productList"></div>
+  <div class="why-grid">
 
-    <!-- CATEGORY GRID -->
-    <h2 class="section-title">Shop by Categories</h2>
-    <div class="category-grid" id="categoryGrid"></div>
+    <div class="why-card">
+      <img src="../img/fast-delivery.png" alt="Fast Delivery">
+      <h4>Fast Delivery</h4>
+      <p class="short">Groceries in under 45 minutes.</p>
+      <p class="more">
+        Orders are routed to the nearest store automatically for lightning-fast delivery.
+      </p>
+      <button onclick="toggleWhy(this)">Read more</button>
+    </div>
 
-    <!-- INFO BOX -->
-    <section class="info-box">
-        <h3>Why Shop with SAI STORES?</h3>
+    <div class="why-card">
+      <img src="../img/fresh-items.png" alt="Fresh Items">
+      <h4>Fresh & Quality</h4>
+      <p class="short">Hand-picked every day.</p>
+      <p class="more">
+        Fruits, vegetables, and dairy are sourced fresh every morning with quality checks.
+      </p>
+      <button onclick="toggleWhy(this)">Read more</button>
+    </div>
 
-        <div class="info-item" onclick="toggleInfo(this)">
-            <p class="info-title">✔ Fast delivery within 45 minutes</p>
-            <p class="info-more">Orders processed instantly with optimized delivery routing.</p>
-        </div>
+    <div class="why-card">
+      <img src="../img/best-price.png" alt="Best Price">
+      <h4>Best Prices</h4>
+      <p class="short">Daily offers & savings.</p>
+      <p class="more">
+        Smart pricing and daily deals ensure you always pay the best price.
+      </p>
+      <button onclick="toggleWhy(this)">Read more</button>
+    </div>
 
-        <div class="info-item" onclick="toggleInfo(this)">
-            <p class="info-title">✔ Fresh and hand-picked items</p>
-            <p class="info-more">Premium quality items hand-picked every morning.</p>
-        </div>
+  </div>
+</section>
 
-        <div class="info-item" onclick="toggleInfo(this)">
-            <p class="info-title">✔ Best prices and daily offers</p>
-            <p class="info-more">Deals updated daily for maximum savings.</p>
-        </div>
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <h2>SAI STORES</h2>
+      <p>Your trusted local grocery partner.</p>
+    </div>
 
-        <div class="info-item" onclick="toggleInfo(this)">
-            <p class="info-title">✔ Trusted by 10,000+ customers</p>
-            <p class="info-more">Reliable service and customer-first support.</p>
-        </div>
-    </section>
+    <div class="footer-social">
+      <a href="#"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#"><i class="fa-brands fa-facebook"></i></a>
+      <a href="#"><i class="fa-brands fa-twitter"></i></a>
+      <a href="#"><i class="fa-brands fa-youtube"></i></a>
+    </div>
+  </div>
 
-    <!-- BOTTOM NAV -->
-    <nav>
-        <div class="bottom-header">
-            <div class="bottom-header">
-            <a href="profile.html" class="bh-item">
-                <i class="fa-solid fa-user"></i>
-                <span>Profile</span>
-            </a>
+  <p class="footer-copy">© 2025 SAI STORES. All rights reserved.</p>
+  <br>
+  <br>
+  <br>
+</footer>
 
-            <a href="wishlist.html" class="bh-item">
-                <i class="fa-solid fa-heart-circle-plus"></i>
-                <span>Wishlist</span>
-            </a>
 
-            <a href="orders.html" class="bh-item">
-                <i class="fa-solid fa-box-open"></i>
-                <span>Orders</span>
-            </a>
-        </div>
+<!-- ================= BOTTOM NAV ================= -->
+<nav class="bottom-header">
+  <a href="profile.html" class="bh-item">
+    <i class="fa-solid fa-user"></i>
+    <span>Profile</span>
+  </a>
 
-    </nav>
+  <a href="wishlist.html" class="bh-item">
+    <i class="fa-solid fa-heart-circle-plus"></i>
+    <span>Wishlist</span>
+  </a>
 
-    <!-- MAIN JS -->
-    <script type="module" src="../js/user/products.js"></script>
+  <a href="orders.html" class="bh-item">
+    <i class="fa-solid fa-box-open"></i>
+    <span>Orders</span>
+  </a>
+</nav>
 
-    <script>
-        function toggleInfo(el) {
-            el.classList.toggle("active");
-        }
-    </script>
+
+<!-- ================= JS ================= -->
+<script type="module" src="../js/user/products.js"></script>
+
+<script>
+  function toggleWhy(btn) {
+    const more = btn.previousElementSibling;
+    const open = more.style.display === "block";
+    more.style.display = open ? "none" : "block";
+    btn.innerText = open ? "Read more" : "Read less";
+  }
+</script>
 
 </body>
 </html>
