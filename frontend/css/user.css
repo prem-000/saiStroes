@@ -147,6 +147,42 @@ h1{
 
 .checkout-item .meta p{margin:2px 0;font-size:15px}
 .checkout-item .meta .muted{color:var(--muted);font-size:13px}
+/* ===== LOGIN REQUIRED ANIMATION ===== */
+.btn.login-required {
+  background: #ff4d4f !important;
+  color: #fff;
+  animation: shake 0.35s;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+/* ===== ORDER SUCCESS CONFETTI ===== */
+.confetti {
+  position: fixed;
+  top: -20px;
+  width: 8px;
+  height: 12px;
+  background: #4caf50;
+  opacity: 0.9;
+  z-index: 9999;
+  animation: fall 1.8s linear forwards;
+}
+
+@keyframes fall {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x), 100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
 
 /* summary */
 .summary-box p{display:flex;justify-content:space-between;margin:10px 0;font-size:16px}
@@ -410,54 +446,103 @@ html, body {
 /* =========================
    MOBILE ORDERS FIX
 ========================= */
-@media (max-width: 480px) {
+/* ===============================
+   FIXED HEADER
+================================ */
+.header,
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56px;
+  z-index: 1000;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
 
-  /* Remove desktop centering */
-  .orders-list {
-    max-width: 100%;
-    padding: 0 10px;
-    margin: 0;
-  }
+/* ===============================
+   BODY (NO SCROLL HERE)
+================================ */
+body {
+  margin: 0;
+  padding-top: 86px;        /* same as header height */
+  overflow-x: hidden;      /* kill horizontal scroll */
+  overflow-y: hidden;      /* only content scrolls */
+}
 
-  /* Make cards full width */
-  .order-card {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-    border-radius: 12px;
-  }
+/* ===============================
+   MAIN SCROLLABLE AREA
+================================ */
+.orders-list {
+  height: calc(100vh - 58px);
+  position: relative;
+  top: 5;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 80px;
+  box-sizing: border-box;
+}
 
-  /* Product row spacing */
-  .order-product {
-    align-items: flex-start;
-  }
+/* ===============================
+   ORDER CARD (FULL WIDTH SAFE)
+================================ */
+.order-card {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
 
-  /* Buttons stack (VERY IMPORTANT) */
-  .btn-view,
-  .btn-wishlist,
-  .btn-delete {
-    width: 100%;
-    margin-top: 8px;
-  }
+/* ===============================
+   PRODUCT ROW (NO FLEX OVERFLOW)
+================================ */
+.order-product {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;   /* CRITICAL: prevents horizontal scroll */
+}
 
-  /* Fix title overlap */
-  .title {
-    position: static;
-    width: 100%;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    text-align: center;
-  }
+/* ===============================
+   TEXT FIXES (LONG NAMES SAFE)
+================================ */
+.prod-title {
+  font-size: 14px;
+  line-height: 1.8;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
 
-  /* Reduce order text size slightly */
-  .prod-title {
-    font-size: 14px;
-  }
+.p-qty,
+.p-price {
+  font-size: 13px;
+}
 
-  .p-qty,
-  .p-price {
-    font-size: 13px;
-  }
+/* ===============================
+   BUTTONS (MOBILE FRIENDLY)
+================================ */
+.btn-view,
+.btn-wishlist,
+.btn-delete {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 8px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* ===============================
+   TITLE FIX
+================================ */
+.title {
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 18px;
 }
 
 
