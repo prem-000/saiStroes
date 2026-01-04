@@ -19,11 +19,13 @@ def _generate_order_number():
 
 
 # ----------------------------------------------------
-# CREATE ORDER (COD OR ONLINE)
+# CREATE ORDER (COD / ONLINE, PROVIDER BASED)
 # ----------------------------------------------------
 async def create_order(
     user_id: str,
-    payment_method: str,          # "cod" | "online"
+    payment_method: str,            # "cod" | "online"
+    delivery_provider: str,          # "local" | "express" | "ekart"
+    pricing: dict,                   # snapshot from /checkout/summary
     note: str | None = None,
     profile: dict | None = None
 ):
@@ -33,11 +35,6 @@ async def create_order(
 
     if not items:
         return None
-
-    delivery = 0 if cart_total > 999 else 49
-    total = cart_total + delivery
-
-    shop_owner_ids = list({str(i.get("owner_id")) for i in items})
 
     # -------------------------------------------------
     # PROFILE SNAPSHOT
@@ -52,54 +49,63 @@ async def create_order(
         profile = saved
 
     # -------------------------------------------------
-    # PAYMENT LOGIC (CRITICAL)
+    # PAYMENT LOGIC
     # -------------------------------------------------
+    total = pricing["payable"]
+
     if payment_method == "cod":
         payment_status = "pending"
         paid_amount = 0.0
     else:  # online
-        payment_status = "pending"   # becomes "paid" after webhook
+        payment_status = "pending"   # webhook will mark paid
         paid_amount = total
 
+    shop_owner_ids = list({str(i.get("owner_id")) for i in items})
+
     # -------------------------------------------------
-    # ORDER DOCUMENT
+    # ORDER DOCUMENT (SNAPSHOT SAFE)
     # -------------------------------------------------
     order_doc = {
         "user_id": user_id,
         "items": items,
-        "cart_total": cart_total,
-        "delivery": delivery,
-        "total": total,
 
+        # pricing snapshot
+        "cart_total": pricing["subtotal"],
+        "delivery_provider": delivery_provider,
+        "delivery_fee": pricing["delivery_fee"],
+        "delivery_discount": pricing["delivery_discount"],
+        "total": pricing["payable"],
+
+        # payment
         "payment_method": payment_method,
         "payment_status": payment_status,
         "paid_amount": paid_amount,
 
+        # meta
         "status": "pending",
         "order_number": _generate_order_number(),
         "created_at": datetime.utcnow(),
         "note": note or "",
 
+        # routing
         "shop_owner_ids": shop_owner_ids,
         "razorpay_order_id": None,
+
+        # snapshot
         "user_profile": profile
     }
 
     result = await orders_collection.insert_one(order_doc)
-
     await clear_cart(user_id)
 
     return {
         "order_id": str(result.inserted_id),
         "order_number": order_doc["order_number"],
-        "cart_total": cart_total,
-        "delivery": delivery,
-        "total": total,
-        "status": "pending",
         "payment_method": payment_method,
         "payment_status": payment_status,
-        "paid_amount": paid_amount,
-        "user_profile": profile
+        "total": pricing["payable"],
+        "delivery_provider": delivery_provider,
+        "status": "pending"
     }
 
 

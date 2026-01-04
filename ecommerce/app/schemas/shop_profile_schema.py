@@ -1,5 +1,9 @@
 from pydantic import BaseModel
 
+class Location(BaseModel):
+    lat: float
+    lng: float
+
 class ShopProfileCreate(BaseModel):
     shop_name: str
     category: str
@@ -7,5 +11,4 @@ class ShopProfileCreate(BaseModel):
     address: str
     city: str
     pincode: str
-    latitude: float
-    longitude: float
+    location: Location
