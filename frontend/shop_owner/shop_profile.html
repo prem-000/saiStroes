@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Shop Profile</title>
+
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/shop_owner.css">
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <!-- Google Maps -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_KEY&libraries=places"></script>
+</head>
+<body>
+
+<nav class="topbar">
+    <h2><i class="fa-solid fa-store"></i> Shop Profile</h2>
+</nav>
+
+<section class="form-container">
+
+    <div class="form-box">
+        <h3><i class="fa-solid fa-circle-info"></i> Shop Details</h3>
+
+        <input id="shop_name" placeholder="Shop Name" />
+        <input id="category" placeholder="Category (Grocery, Pharmacy…)" />
+        <input id="phone" placeholder="Phone Number" />
+        <input id="address" placeholder="Address" />
+        <input id="city" placeholder="City" />
+        <input id="pincode" placeholder="Pincode" />
+
+        <!-- MAP -->
+        <div class="map-box">
+            <p><i class="fa-solid fa-location-dot"></i> Select Shop Location</p>
+            <div id="map"></div>
+        </div>
+
+        <button class="btn-primary" onclick="saveProfile()">
+            <i class="fa-solid fa-floppy-disk"></i> Save Shop Profile
+        </button>
+
+        <p id="profileMsg" class="form-msg"></p>
+    </div>
+
+</section>
+
+<script type="module" src="../js/shop_owner/shop_profile.js"></script>
+</body>
+</html>

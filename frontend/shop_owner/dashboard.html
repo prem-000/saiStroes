@@ -7,80 +7,135 @@
 
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/shop_owner.css">
+
+    <!-- ICONS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
 </head>
 
 <body>
 
+    <!-- ================= TOP BAR ================= -->
     <nav class="topbar">
-        <h2>Shop Owner Dashboard</h2>
+        <h2>
+            <i class="fa-solid fa-gauge-high"></i>
+            Shop Owner Dashboard
+        </h2>
 
         <div class="nav-links">
-            
-            <a href="orders.html">Orders</a>
-            <a href="add_product.html">Add Product</a>
-            <a href="notifications.html">Notifications</a>
-            <a href="edit_product.html">Edit Product</a>
-            <a href="my_products.html">My Products</a>
-            <a href="login.html">login</a>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <a href="orders.html">
+                <i class="fa-solid fa-box"></i> Orders
+            </a>
+
+             <a href="login.html">
+                <i class="fa-solid fa-user"></i> login
+            </a>
+
+            <a href="my_products.html">
+                <i class="fa-solid fa-cubes"></i> My Products
+            </a>
+
+            <a href="add_product.html">
+                <i class="fa-solid fa-plus"></i> Add Product
+            </a>
+
+            <a href="shop_profile.html">
+                <i class="fa-solid fa-store"></i> Shop Profile
+            </a>
+
+            <a href="shop_bank.html">
+                <i class="fa-solid fa-building-columns"></i> Bank Details
+            </a>
+
+            <a href="notifications.html">
+                <i class="fa-solid fa-bell"></i>
+                Notifications
+                <span id="notifCount" class="notif-count"></span>
+            </a>
+
+            <button class="logout-btn" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
     </nav>
 
-    <div class="notif-bell">
-        <span id="notifCount" class="notif-count"></span>
-    </div>
-
-    <!-- 📌 DASHBOARD SUMMARY BOXES -->
+    <!-- ================= DASHBOARD SUMMARY ================= -->
     <section class="dashboard-container">
-        <header>
-            <div class="stat-card">
-                <h2>Hand cash amounts are shown strictly for analytical purposes only.</h2>
-                <h2>They are not credited to the shop owner's account balance.</h2>
+
+        <!-- IMPORTANT NOTE -->
+        <div class="stat-card notice-card">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+                <p>
+                    Hand cash amounts are shown strictly for analytical purposes only.
+                </p>
+                <p>
+                    They are <strong>not credited</strong> to the shop owner's account balance.
+                </p>
             </div>
-        </header>
+        </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Total Orders</h3>
+                <h3><i class="fa-solid fa-box"></i> Total Orders</h3>
                 <p id="totalOrders">0</p>
             </div>
 
-            
-
             <div class="stat-card">
-                <h3>Total Revenue</h3>
+                <h3><i class="fa-solid fa-indian-rupee-sign"></i> Total Revenue</h3>
                 <p id="totalRevenue">₹0</p>
             </div>
 
             <div class="stat-card">
-                <h3>Items Sold</h3>
+                <h3><i class="fa-solid fa-cart-shopping"></i> Items Sold</h3>
                 <p id="itemsSold">0</p>
             </div>
 
             <div class="stat-card">
-                <h3>Revenue (Last 7 Days)</h3>
+                <h3><i class="fa-solid fa-calendar-week"></i> Revenue (Last 7 Days)</h3>
                 <p id="weeklyRevenue">₹0</p>
             </div>
 
             <div class="stat-card">
-                <h3>Revenue (Last 30 Days)</h3>
+                <h3><i class="fa-solid fa-calendar-days"></i> Revenue (Last 30 Days)</h3>
                 <p id="monthlyRevenue">₹0</p>
             </div>
-
         </div>
 
     </section>
 
-    <!-- 📌 PRODUCTS TABLE SECTION -->
-    <section class="table-section">
-        <h2 style="margin-top: 40px;">Products Overview</h2>
+    <!-- ================= CHARTS SECTION ================= -->
+    <section class="charts-grid">
+        <div class="chart-box">
+            <h3><i class="fa-solid fa-chart-line"></i> Orders (Last 7 Days)</h3>
+            <canvas id="ordersChart"></canvas>
+        </div>
 
-        <!-- Table rendered by JS -->
+        <div class="chart-box">
+            <h3><i class="fa-solid fa-money-bill-trend-up"></i> Revenue (Last 7 Days)</h3>
+            <canvas id="revenueChart"></canvas>
+        </div>
+
+        <div class="chart-box">
+            <h3><i class="fa-solid fa-chart-pie"></i> Order Status</h3>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </section>
+
+    <!-- ================= PRODUCTS TABLE ================= -->
+    <section class="table-section">
+        <h2 style="margin-top: 40px;">
+            <i class="fa-solid fa-table"></i> Products Overview
+        </h2>
+
         <div id="productsTableRoot"></div>
     </section>
 
-    <!-- 📌 Load ONLY ONE JS MODULE -->
-     <script src="../js/api.js"></script>
+    <!-- ================= SCRIPTS ================= -->
+    <script src="../js/api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="../js/shop_owner/dashboard.js"></script>
 
 </body>

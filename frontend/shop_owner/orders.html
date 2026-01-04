@@ -7,27 +7,34 @@
 
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/shop_owner.css">
+
+    <!-- ICONS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
 </head>
 
 <body>
 
     <nav class="topbar">
-        <h2>My Orders</h2>
+        <h2><i class="fa-solid fa-box"></i> My Orders</h2>
 
         <div class="nav-links">
-            <a href="dashboard.html">Dashboard</a>
-            <a href="orders.html">Orders</a>
-            <a href="add_product.html">Add Product</a>
-            <a href="notifications.html">Notifications</a>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <!-- <a href="orders.html" class="active"><i class="fa-solid fa-box-open"></i> Orders</a> -->
+            <a href="add_product.html"><i class="fa-solid fa-plus"></i> Add Product</a>
+            <a href="notifications.html"><i class="fa-solid fa-bell"></i> Notifications</a>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
     </nav>
-
 
     <section class="orders-wrapper">
 
         <div id="ordersList" class="orders-grid">
-            <!-- JS will load orders here -->
+            <!-- Orders injected by JS -->
         </div>
 
     </section>

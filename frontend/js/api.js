@@ -1,4 +1,4 @@
-export const BASE_URL = "https://saistroes-b7xu.onrender.com";
+export const BASE_URL = "http://127.0.0.1:8000";
 
 export async function apiRequest(url, method = "GET", data = null) {
     let token = null;

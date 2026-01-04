@@ -55,3 +55,18 @@ if (loginForm) {
         }
     });
 }
+
+
+const passwordInput = document.getElementById("password");
+const toggle = document.getElementById("togglePassword");
+
+if (toggle && passwordInput) {
+    toggle.addEventListener("click", () => {
+        const isHidden = passwordInput.type === "password";
+
+        passwordInput.type = isHidden ? "text" : "password";
+
+        toggle.classList.toggle("fa-eye", !isHidden);
+        toggle.classList.toggle("fa-eye-slash", isHidden);
+    });
+}

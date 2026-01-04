@@ -7,79 +7,94 @@
 
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/shop_owner.css">
+
+    <!-- ICONS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
 </head>
 
 <body>
 
     <nav class="topbar">
-        <h2>Order Details</h2>
+        <h2><i class="fa-solid fa-receipt"></i> Order Details</h2>
 
         <div class="nav-links">
-            <a href="dashboard.html">Dashboard</a>
-            <a href="orders.html">Orders</a>
-            <a href="add_product.html">Add Product</a>
-            <a href="notifications.html">Notifications</a>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="orders.html"><i class="fa-solid fa-box"></i> Orders</a>
+            <a href="add_product.html"><i class="fa-solid fa-plus"></i> Add Product</a>
+            <a href="notifications.html"><i class="fa-solid fa-bell"></i> Notifications</a>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
     </nav>
-
 
     <section class="order-details-container">
 
         <!-- ORDER INFO -->
         <div class="order-box">
-            <h3>Order Info</h3>
+            <h3><i class="fa-solid fa-info-circle"></i> Order Info</h3>
 
-            <p><strong>Order ID:</strong> <span id="orderId"></span></p>
-            <p><strong>Status:</strong> 
+            <p><strong><i class="fa-solid fa-hashtag"></i> Order ID:</strong> <span id="orderId"></span></p>
+            <p>
+                <strong><i class="fa-solid fa-circle-notch"></i> Status:</strong>
                 <span id="orderStatus" class="status-pill"></span>
             </p>
-            <p><strong>Date:</strong> <span id="orderDate"></span></p>
+            <p><strong><i class="fa-solid fa-calendar"></i> Date:</strong> <span id="orderDate"></span></p>
         </div>
 
+        <!-- PAYMENT INFO -->
+        <div class="order-box">
+            <h3><i class="fa-solid fa-credit-card"></i> Payment Information</h3>
+
+            <p><strong><i class="fa-solid fa-wallet"></i> Method:</strong> <span id="paymentMethod"></span></p>
+            <p><strong><i class="fa-solid fa-check-circle"></i> Status:</strong> <span id="paymentStatus"></span></p>
+            <p><strong><i class="fa-solid fa-indian-rupee-sign"></i> Paid Amount:</strong> <span id="paidAmount"></span></p>
+
+            <p class="muted" id="paymentNote"></p>
+        </div>
 
         <!-- DELIVERY ADDRESS -->
         <div class="order-box">
-            <h3>Delivery Address</h3>
+            <h3><i class="fa-solid fa-location-dot"></i> Delivery Address</h3>
 
-            <p><strong>Name:</strong> <span id="custName"></span></p>
-            <p><strong>Phone:</strong> <span id="custPhone"></span></p>
+            <p><strong><i class="fa-solid fa-user"></i> Name:</strong> <span id="custName"></span></p>
+            <p><strong><i class="fa-solid fa-phone"></i> Phone:</strong> <span id="custPhone"></span></p>
 
-            <p><strong>Address:</strong></p>
+            <p><strong><i class="fa-solid fa-house"></i> Address:</strong></p>
             <div id="custAddress" class="address-box"></div>
         </div>
 
-
         <!-- ORIGIN ADDRESS -->
         <div class="order-box">
-            <h3>Origin (Shop) Address</h3>
+            <h3><i class="fa-solid fa-store"></i> Origin (Shop) Address</h3>
             <div id="originAddress" class="address-box">
-                <!-- Optional: Fill from shop owner profile -->
+                <!-- Optional -->
             </div>
         </div>
 
-
         <!-- ITEMS -->
         <div class="order-box">
-            <h3>Items</h3>
+            <h3><i class="fa-solid fa-cart-shopping"></i> Items</h3>
 
             <table class="order-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Qty</th>
-                        <th>Price</th>
-                        <th>Total</th>
+                        <th><i class="fa-solid fa-box"></i> Name</th>
+                        <th><i class="fa-solid fa-sort-numeric-up"></i> Qty</th>
+                        <th><i class="fa-solid fa-tag"></i> Price</th>
+                        <th><i class="fa-solid fa-calculator"></i> Total</th>
                     </tr>
                 </thead>
                 <tbody id="itemsBody"></tbody>
             </table>
         </div>
 
-
         <!-- STATUS UPDATE -->
         <div class="order-box">
-            <h3>Update Status</h3>
+            <h3><i class="fa-solid fa-rotate"></i> Update Status</h3>
 
             <select id="statusSelect" class="status-select">
                 <option value="pending">Pending</option>
@@ -90,7 +105,9 @@
                 <option value="cancelled">Cancelled</option>
             </select>
 
-            <button class="btn-primary" onclick="updateStatus()">Update</button>
+            <button class="btn-primary" onclick="updateStatus()">
+                <i class="fa-solid fa-floppy-disk"></i> Update
+            </button>
         </div>
 
     </section>

@@ -25,7 +25,7 @@ function escape(v) {
 }
 
 // ----------------------------------------------
-// DASHBOARD SUMMARY
+// DASHBOARD SUMMARY (BACKEND-ALIGNED)
 // ----------------------------------------------
 async function loadDashboard() {
     try {
@@ -37,9 +37,13 @@ async function loadDashboard() {
         set("weeklyRevenue", "₹" + data.weekly_revenue);
         set("monthlyRevenue", "₹" + data.monthly_revenue);
 
+        // optional note display
+        if (document.getElementById("dashboardNote")) {
+            set("dashboardNote", data.note);
+        }
+
     } catch (err) {
-        console.error("Dashboard error:", err);
-        alert("Failed to load dashboard");
+        console.error("Dashboard load failed:", err);
     }
 }
 
@@ -59,7 +63,7 @@ async function loadProductsTable() {
         renderTable(productsCache);
 
     } catch (err) {
-        console.error("Products hooking failed:", err);
+        console.error("Products load failed:", err);
         root.innerHTML = `<p class="muted">Failed to load products</p>`;
     }
 }
@@ -119,9 +123,11 @@ function rowTemplate(p) {
 
 function applySearch() {
     const q = document.getElementById("tableSearch").value.toLowerCase();
-    updateRows(productsCache.filter(p =>
-        `${p._id} ${p.title} ${p.description || ""}`.toLowerCase().includes(q)
-    ));
+    updateRows(
+        productsCache.filter(p =>
+            `${p._id} ${p.title}`.toLowerCase().includes(q)
+        )
+    );
 }
 
 function sortTable(key) {
@@ -140,24 +146,29 @@ function sortTable(key) {
 
 function updateRows(list) {
     const tbody = document.querySelector("#productsTable tbody");
+    if (!tbody) return;
     tbody.innerHTML = list.map(rowTemplate).join("");
     attachRowEvents();
 }
 
 function attachRowEvents() {
-    document.querySelectorAll(".btn-edit").forEach(btn =>
+    document.querySelectorAll(".btn-edit").forEach(btn => {
         btn.onclick = () =>
-            window.location.href = `edit_product.html?id=${btn.dataset.id}`
-    );
+            window.location.href = `edit_product.html?id=${btn.dataset.id}`;
+    });
 
-    document.querySelectorAll(".btn-delete").forEach(btn =>
+    document.querySelectorAll(".btn-delete").forEach(btn => {
         btn.onclick = async () => {
             if (!confirm("Delete product?")) return;
-            await apiRequest(`/shop-owner/products/${btn.dataset.id}`, "DELETE");
-            productsCache = productsCache.filter(p => p._id !== btn.dataset.id);
-            updateRows(productsCache);
-        }
-    );
+            try {
+                await apiRequest(`/shop-owner/products/${btn.dataset.id}`, "DELETE");
+                productsCache = productsCache.filter(p => p._id !== btn.dataset.id);
+                updateRows(productsCache);
+            } catch (err) {
+                console.error("Delete failed:", err);
+            }
+        };
+    });
 }
 
 // ----------------------------------------------
@@ -165,7 +176,7 @@ function attachRowEvents() {
 // ----------------------------------------------
 function exportCSV() {
     const rows = document.querySelectorAll("#productsTable tbody tr");
-    if (!rows.length) return alert("No products");
+    if (!rows.length) return;
 
     const csv = [["ID", "Title", "Price", "Stock", "Created"]];
     rows.forEach(r => {
@@ -190,7 +201,9 @@ async function loadUnreadCount() {
     try {
         const notes = await apiRequest("/notifications/owner/me");
         set("notifCount", notes.filter(n => !n.read).length);
-    } catch {}
+    } catch (err) {
+        console.error("Notification load failed:", err);
+    }
 }
 
 // ----------------------------------------------
@@ -201,10 +214,61 @@ window.logout = () => {
     window.location.href = "login.html";
 };
 
+
+// ----------------------------------------------
+// LOAD CHARTS
+// ----------------------------------------------
+async function loadCharts() {
+    try {
+        const data = await apiRequest("/shop-owner/dashboard/charts");
+
+        // ORDERS LINE
+        new Chart(document.getElementById("ordersChart"), {
+            type: "line",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Orders",
+                    data: data.orders_trend,
+                    tension: 0.3
+                }]
+            }
+        });
+
+        // REVENUE LINE
+        new Chart(document.getElementById("revenueChart"), {
+            type: "line",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Revenue (₹)",
+                    data: data.revenue_trend,
+                    tension: 0.3
+                }]
+            }
+        });
+
+        // STATUS PIE
+        new Chart(document.getElementById("statusChart"), {
+            type: "pie",
+            data: {
+                labels: Object.keys(data.status_distribution),
+                datasets: [{
+                    data: Object.values(data.status_distribution)
+                }]
+            }
+        });
+
+    } catch (err) {
+        console.error("Chart load failed:", err);
+    }
+}
+
 // ----------------------------------------------
 // INIT
 // ----------------------------------------------
 loadDashboard();
 loadProductsTable();
 loadUnreadCount();
+loadCharts();
 setInterval(loadUnreadCount, 15000);

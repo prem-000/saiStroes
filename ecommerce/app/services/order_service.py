@@ -19,26 +19,28 @@ def _generate_order_number():
 
 
 # ----------------------------------------------------
-# CREATE ORDER (WITH PROFILE SNAPSHOT)
+# CREATE ORDER (COD OR ONLINE)
 # ----------------------------------------------------
-async def create_order(user_id: str, note: str | None = None, profile: dict | None = None):
+async def create_order(
+    user_id: str,
+    payment_method: str,          # "cod" | "online"
+    note: str | None = None,
+    profile: dict | None = None
+):
     cart = await get_cart(user_id)
-
     items = cart.get("items", [])
     cart_total = float(cart.get("cart_total", 0))
 
     if not items:
         return None
 
-    # Delivery charges
     delivery = 0 if cart_total > 999 else 49
     total = cart_total + delivery
 
-    # Ensure shop owner list is ALWAYS correct
-    shop_owner_ids = list({str(item.get("owner_id")) for item in items})
+    shop_owner_ids = list({str(i.get("owner_id")) for i in items})
 
     # -------------------------------------------------
-    # PROFILE HANDLING (CORRECTED)
+    # PROFILE SNAPSHOT
     # -------------------------------------------------
     if profile is None:
         saved = await profiles.find_one({"user_id": user_id})
@@ -50,7 +52,17 @@ async def create_order(user_id: str, note: str | None = None, profile: dict | No
         profile = saved
 
     # -------------------------------------------------
-    # ORDER DOCUMENT (CLEAN & CONSISTENT)
+    # PAYMENT LOGIC (CRITICAL)
+    # -------------------------------------------------
+    if payment_method == "cod":
+        payment_status = "pending"
+        paid_amount = 0.0
+    else:  # online
+        payment_status = "pending"   # becomes "paid" after webhook
+        paid_amount = total
+
+    # -------------------------------------------------
+    # ORDER DOCUMENT
     # -------------------------------------------------
     order_doc = {
         "user_id": user_id,
@@ -58,27 +70,25 @@ async def create_order(user_id: str, note: str | None = None, profile: dict | No
         "cart_total": cart_total,
         "delivery": delivery,
         "total": total,
+
+        "payment_method": payment_method,
+        "payment_status": payment_status,
+        "paid_amount": paid_amount,
+
         "status": "pending",
         "order_number": _generate_order_number(),
-
-        # ✔ Store real datetime (NOT STRING)
         "created_at": datetime.utcnow(),
-
         "note": note or "",
+
         "shop_owner_ids": shop_owner_ids,
         "razorpay_order_id": None,
-
-        # ✔ Shop owner needs this
         "user_profile": profile
     }
 
-    # Insert into DB
     result = await orders_collection.insert_one(order_doc)
 
-    # Clear cart
     await clear_cart(user_id)
 
-    # Return safe response
     return {
         "order_id": str(result.inserted_id),
         "order_number": order_doc["order_number"],
@@ -86,17 +96,30 @@ async def create_order(user_id: str, note: str | None = None, profile: dict | No
         "delivery": delivery,
         "total": total,
         "status": "pending",
+        "payment_method": payment_method,
+        "payment_status": payment_status,
+        "paid_amount": paid_amount,
         "user_profile": profile
     }
 
 
 # ----------------------------------------------------
-# RAZORPAY UPDATE
+# ATTACH RAZORPAY ORDER ID
 # ----------------------------------------------------
 async def attach_razorpay_order(order_id: str, razorpay_id: str):
     await orders_collection.update_one(
         {"_id": ObjectId(order_id)},
         {"$set": {"razorpay_order_id": razorpay_id}}
+    )
+
+
+# ----------------------------------------------------
+# MARK ONLINE PAYMENT SUCCESS (WEBHOOK)
+# ----------------------------------------------------
+async def mark_payment_success(order_id: str):
+    await orders_collection.update_one(
+        {"_id": ObjectId(order_id)},
+        {"$set": {"payment_status": "paid"}}
     )
 
 
@@ -115,7 +138,7 @@ async def get_orders_by_user(user_id: str):
 
 
 # ----------------------------------------------------
-# GET ORDER BY ID
+# GET SINGLE ORDER
 # ----------------------------------------------------
 async def get_order_by_id(order_id: str, user_id: str | None = None):
     try:
@@ -126,7 +149,6 @@ async def get_order_by_id(order_id: str, user_id: str | None = None):
     if not o:
         return None
 
-    # Validate owner of order
     if user_id and o.get("user_id") != user_id:
         return None
 

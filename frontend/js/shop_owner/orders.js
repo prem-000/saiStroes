@@ -29,14 +29,10 @@ async function loadOrders() {
             const card = document.createElement("div");
             card.classList.add("order-card");
 
-            // store order id
             card.dataset.orderId = order.id;
 
-            const qty = order.items?.reduce((sum, it) => sum + it.quantity, 0) || 0;
-            const amt = order.items?.reduce(
-                (sum, it) => sum + it.quantity * it.price,
-                0
-            ) || 0;
+            const qty = order.items?.reduce((s, i) => s + i.quantity, 0) || 0;
+            const amt = order.total ?? 0;
 
             const user = order.user || {};
             const username = user.name || "Unknown";
@@ -46,6 +42,16 @@ async function loadOrders() {
                 ? new Date(order.created_at).toLocaleString()
                 : "Unknown";
 
+            // 🔥 PAYMENT DISPLAY
+            const method = order.payment_method === "online"
+                ? "Online Payment"
+                : "Cash on Delivery";
+
+            const paymentNote =
+                order.payment_method === "cod"
+                    ? "Collect cash from customer"
+                    : "Paid online (settlement pending)";
+
             card.innerHTML = `
                 <h3>Order #${order.order_number}</h3>
 
@@ -53,7 +59,10 @@ async function loadOrders() {
                 <p><b>Phone:</b> ${userphone}</p>
 
                 <p><b>Total Items:</b> ${qty}</p>
-                <p><b>Amount:</b> ₹${amt}</p>
+                <p><b>Order Total:</b> ₹${amt}</p>
+
+                <p><b>Payment:</b> ${method}</p>
+                <p class="payment-note">${paymentNote}</p>
 
                 <p><b>Date:</b> ${createdAt}</p>
 
@@ -62,9 +71,9 @@ async function loadOrders() {
                 </span>
             `;
 
-            card.addEventListener("click", () => {
+            card.onclick = () => {
                 window.location.href = `order_view.html?id=${order.id}`;
-            });
+            };
 
             list.appendChild(card);
         });
@@ -75,7 +84,5 @@ async function loadOrders() {
     }
 }
 
-// ----------------------------------------------
-// INIT
 // ----------------------------------------------
 loadOrders();
