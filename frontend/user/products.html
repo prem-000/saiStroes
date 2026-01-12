@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
@@ -14,137 +15,143 @@
 
 <body>
 
-<!-- ================= TOP NAV ================= -->
-<header class="navbar">
-  <div class="nav-left">
-    <h2 class="logo">SAI STORES</h2>
-  </div>
-
-  <div class="nav-center">
-    <div class="search-box">
-      <input id="searchInput" type="text" placeholder="Search for products..." />
-      <i class="fas fa-search"></i>
-    </div>
-  </div>
-
-  <div class="nav-right">
-    <a href="cart.html" class="nav-icon cart-link">
-      <i class="fa-solid fa-cart-shopping"></i>
-      <span id="cartCount" class="cart-badge">0</span>
-    </a>
-
-    <a href="login.html" class="nav-icon">
-      <i class="fa-solid fa-user-circle"></i>
-    </a>
-
-    <a href="notifications.html" class="nav-icon notify-link">
-      <i class="fa-solid fa-bell"></i>
-      <span id="notifCount" class="notif-badge">0</span>
-    </a>
-  </div>
-</header>
-
-<br><br><br>
-
-<!-- ================= PRODUCTS (AUTO FROM JS) ================= -->
-<div id="productList"></div>
-
-<!-- ================= CATEGORIES ================= -->
-<h2 class="section-title">Shop by Categories</h2>
-<div class="category-grid" id="categoryGrid"></div>
-
-<!-- ================= WHY SHOP (IMAGE BASED) ================= -->
-<section class="why-shop">
-  <h2 class="section-title">Why Shop with <span>SAI STORES</span></h2>
-
-  <div class="why-grid">
-
-    <div class="why-card">
-      <img src="../img/fast-delivery.png" alt="Fast Delivery">
-      <h4>Fast Delivery</h4>
-      <p class="short">Groceries in under 45 minutes.</p>
-      <p class="more">
-        Orders are routed to the nearest store automatically for lightning-fast delivery.
-      </p>
-      <button onclick="toggleWhy(this)">Read more</button>
+  <!-- ================= TOP NAV ================= -->
+  <header class="navbar">
+    <div class="nav-left">
+      <h2 class="logo">SAI STORES</h2>
     </div>
 
-    <div class="why-card">
-      <img src="../img/fresh-items.png" alt="Fresh Items">
-      <h4>Fresh & Quality</h4>
-      <p class="short">Hand-picked every day.</p>
-      <p class="more">
-        Fruits, vegetables, and dairy are sourced fresh every morning with quality checks.
-      </p>
-      <button onclick="toggleWhy(this)">Read more</button>
+    <div class="nav-center">
+      <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Search for products..." />
+        <i class="fas fa-search"></i>
+      </div>
     </div>
 
-    <div class="why-card">
-      <img src="../img/best-price.png" alt="Best Price">
-      <h4>Best Prices</h4>
-      <p class="short">Daily offers & savings.</p>
-      <p class="more">
-        Smart pricing and daily deals ensure you always pay the best price.
-      </p>
-      <button onclick="toggleWhy(this)">Read more</button>
+    <div class="nav-right">
+      <a href="cart.html" class="nav-icon cart-link">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span id="cartCount" class="cart-badge">0</span>
+      </a>
+
+      <a href="login.html" class="nav-icon">
+        <i class="fa-solid fa-user-circle"></i>
+      </a>
+
+      <a href="notifications.html" class="nav-icon notify-link">
+        <i class="fa-solid fa-bell"></i>
+        <span id="notifCount" class="notif-badge">0</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= BANNERS ================= -->
+    <div class="banner-wrapper">
+      <div id="bannerSlider" class="banner-slider"></div>
     </div>
 
-  </div>
-</section>
 
-<!-- ================= FOOTER ================= -->
-<footer class="site-footer">
-  <div class="footer-top">
-    <div class="footer-brand">
-      <h2>SAI STORES</h2>
-      <p>Your trusted local grocery partner.</p>
-    </div>
+    <!-- ================= PRODUCTS (AUTO FROM JS) ================= -->
+    <div id="productList"></div>
 
-    <div class="footer-social">
-      <a href="#"><i class="fa-brands fa-instagram"></i></a>
-      <a href="#"><i class="fa-brands fa-facebook"></i></a>
-      <a href="#"><i class="fa-brands fa-twitter"></i></a>
-      <a href="#"><i class="fa-brands fa-youtube"></i></a>
-    </div>
-  </div>
+    <!-- ================= CATEGORIES ================= -->
+    <h2 class="section-title">Shop by Categories</h2>
+    <div class="category-grid" id="categoryGrid"></div>
 
-  <p class="footer-copy">© 2025 SAI STORES. All rights reserved.</p>
-  <br>
-  <br>
-  <br>
-</footer>
+    <!-- ================= WHY SHOP (IMAGE BASED) ================= -->
+    <section class="why-shop">
+      <h2 class="section-title">Why Shop with <span>SAI STORES</span></h2>
+
+      <div class="why-grid">
+
+        <div class="why-card">
+          <img src="../img/fast-delivery.png" alt="Fast Delivery">
+          <h4>Fast Delivery</h4>
+          <p class="short">Groceries in under 45 minutes.</p>
+          <p class="more">
+            Orders are routed to the nearest store automatically for lightning-fast delivery.
+          </p>
+          <button onclick="toggleWhy(this)">Read more</button>
+        </div>
+
+        <div class="why-card">
+          <img src="../img/fresh-items.png" alt="Fresh Items">
+          <h4>Fresh & Quality</h4>
+          <p class="short">Hand-picked every day.</p>
+          <p class="more">
+            Fruits, vegetables, and dairy are sourced fresh every morning with quality checks.
+          </p>
+          <button onclick="toggleWhy(this)">Read more</button>
+        </div>
+
+        <div class="why-card">
+          <img src="../img/best-price.png" alt="Best Price">
+          <h4>Best Prices</h4>
+          <p class="short">Daily offers & savings.</p>
+          <p class="more">
+            Smart pricing and daily deals ensure you always pay the best price.
+          </p>
+          <button onclick="toggleWhy(this)">Read more</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="site-footer">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <h2>SAI STORES</h2>
+          <p>Your trusted local grocery partner.</p>
+        </div>
+
+        <div class="footer-social">
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#"><i class="fa-brands fa-facebook"></i></a>
+          <a href="#"><i class="fa-brands fa-twitter"></i></a>
+          <a href="#"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+
+      <p class="footer-copy">© 2025 SAI STORES. All rights reserved.</p>
+      <br>
+      <br>
+      <br>
+    </footer>
 
 
-<!-- ================= BOTTOM NAV ================= -->
-<nav class="bottom-header">
-  <a href="profile.html" class="bh-item">
-    <i class="fa-solid fa-user"></i>
-    <span>Profile</span>
-  </a>
+    <!-- ================= BOTTOM NAV ================= -->
+    <nav class="bottom-header">
+      <a href="profile.html" class="bh-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Profile</span>
+      </a>
 
-  <a href="wishlist.html" class="bh-item">
-    <i class="fa-solid fa-heart-circle-plus"></i>
-    <span>Wishlist</span>
-  </a>
+      <a href="wishlist.html" class="bh-item">
+        <i class="fa-solid fa-heart-circle-plus"></i>
+        <span>Wishlist</span>
+      </a>
 
-  <a href="orders.html" class="bh-item">
-    <i class="fa-solid fa-box-open"></i>
-    <span>Orders</span>
-  </a>
-</nav>
+      <a href="orders.html" class="bh-item">
+        <i class="fa-solid fa-box-open"></i>
+        <span>Orders</span>
+      </a>
+    </nav>
 
 
-<!-- ================= JS ================= -->
-<script type="module" src="../js/user/products.js"></script>
+    <!-- ================= JS ================= -->
+    <script type="module" src="../js/user/products.js"></script>
 
-<script>
-  function toggleWhy(btn) {
-    const more = btn.previousElementSibling;
-    const open = more.style.display === "block";
-    more.style.display = open ? "none" : "block";
-    btn.innerText = open ? "Read more" : "Read less";
-  }
-</script>
+    <script>
+      function toggleWhy(btn) {
+        const more = btn.previousElementSibling;
+        const open = more.style.display === "block";
+        more.style.display = open ? "none" : "block";
+        btn.innerText = open ? "Read more" : "Read less";
+      }
+    </script>
 
 </body>
+
 </html>

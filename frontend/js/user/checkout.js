@@ -1,7 +1,7 @@
 import { apiRequest } from "../api.js";
 
 /* ----------------------------------------------------
-   DOM ELEMENTS
+   ELEMENTS
 ---------------------------------------------------- */
 const itemsBox = document.getElementById("checkoutItems");
 const subtotalEl = document.getElementById("subtotal");
@@ -12,231 +12,221 @@ const noteEl = document.getElementById("note");
 const codBtn = document.getElementById("codBtn");
 const onlinePayBtn = document.getElementById("onlinePayBtn");
 
+const p_name = document.getElementById("p_name");
+const p_phone = document.getElementById("p_phone");
+const p_address = document.getElementById("p_address");
+const p_city = document.getElementById("p_city");
+const p_pincode = document.getElementById("p_pincode");
+const p_state = document.getElementById("p_state");
+
+/* ----------------------------------------------------
+   STATE
+---------------------------------------------------- */
+let userLat = null;
+let userLng = null;
+
 /* ----------------------------------------------------
    HELPERS
 ---------------------------------------------------- */
-function INR(n) {
-  return "₹" + Number(n).toLocaleString("en-IN");
-}
+const claimNewUser = document.getElementById("claimNewUser");
+const couponMsg = document.getElementById("couponMsg");
+const discountRow = document.getElementById("discountRow");
+const discountVal = document.getElementById("discountVal");
+const couponCode = document.getElementById("couponCode");
+const deliveryMsg = document.getElementById("deliveryMsg");
 
-function isLoggedIn() {
-  return (
-    localStorage.getItem("user_token") ||
-    localStorage.getItem("shop_owner_token")
-  );
-}
+const INR = (n) => "₹" + Number(n).toLocaleString("en-IN");
 
-/* ----------------------------------------------------
-   LOGIN REQUIRED BUTTON ANIMATION
----------------------------------------------------- */
-function loginRequiredAnimation(btn, originalText) {
-  btn.classList.add("login-required");
-  btn.textContent = "Login first";
+function renderSummary(data) {
+  if (!data || !data.items) return;
+  // Items
+  itemsBox.innerHTML = data.items
+    .map(
+      (i) => `
+        <div class="checkout-item" style="justify-content:space-between">
+          <div style="display:flex; gap:12px; align-items:center">
+             <img src="${i.image || "./default.jpg"}" class="thumb">
+             <div class="meta">
+               <p>${i.title}</p>
+               <p class="muted">₹${i.price}</p>
+             </div>
+          </div>
+          
+          <div class="qty-ctrl">
+             <button class="qty-btn" onclick="changeQuantity('${i.product_id}', ${i.quantity - 1})">−</button>
+             <span class="qty-num">${i.quantity}</span>
+             <button class="qty-btn" onclick="changeQuantity('${i.product_id}', ${i.quantity + 1})">+</button>
+          </div>
+        </div>
+  `
+    )
+    .join("");
 
-  setTimeout(() => {
-    btn.classList.remove("login-required");
-    btn.textContent = originalText;
-  }, 1500);
-}
+  // Breakdown
+  subtotalEl.textContent = INR(data.cart_subtotal);
+  deliveryEl.textContent = INR(data.delivery_fee);
+  deliveryMsg.textContent = data.delivery_breakdown || "";
 
-/* ----------------------------------------------------
-   ORDER SUCCESS CONFETTI
----------------------------------------------------- */
-function showOrderSuccessAnimation() {
-  for (let i = 0; i < 20; i++) {
-    const c = document.createElement("div");
-    c.className = "confetti";
+  if (data.discount > 0) {
+    discountRow.style.display = "flex";
+    discountVal.textContent = "-" + INR(data.discount);
+    couponCode.textContent = data.discount_code || "OFFER";
 
-    c.style.left = Math.random() * window.innerWidth + "px";
-    c.style.setProperty("--x", Math.random() * 200 - 100 + "px");
-    c.style.background = ["#4caf50", "#ff9800", "#2196f3"][i % 3];
+    couponMsg.style.display = "block";
+    couponMsg.style.color = "green";
+    couponMsg.style.background = "#e6fffa";
+    couponMsg.style.padding = "10px";
+    couponMsg.style.marginTop = "10px";
+    couponMsg.style.borderRadius = "8px";
+    couponMsg.textContent = data.discount_msg;
+  } else {
+    discountRow.style.display = "none";
+    couponMsg.style.display = "none";
 
-    document.body.appendChild(c);
-    setTimeout(() => c.remove(), 2000);
+    if (document.getElementById("claimNewUser").checked) {
+      couponMsg.style.display = "block";
+      couponMsg.style.color = "orange";
+      couponMsg.style.background = "#fffaf0";
+      couponMsg.textContent = data.discount_msg || "Offer not applicable";
+    }
   }
+
+  totalEl.textContent = INR(data.final_total);
 }
+
+// TOGGLE LISTENER
+claimNewUser.addEventListener("change", () => {
+  loadSummary();
+});
 
 /* ----------------------------------------------------
    LOAD CHECKOUT SUMMARY
 ---------------------------------------------------- */
 async function loadSummary() {
-  itemsBox.innerHTML = `<p class="muted">Loading items...</p>`;
+  itemsBox.innerHTML = `<p class="muted">Loading checkout...</p>`;
 
   try {
-    const data = await apiRequest("/checkout/summary");
+    // 1. Get Profile for Location
+    const profile = await apiRequest("/profile/me");
 
-    if (!data.items?.length) {
-      itemsBox.innerHTML = `<p class="muted">Your cart is empty.</p>`;
-      codBtn.disabled = true;
-      onlinePayBtn.disabled = true;
+    // Populate contact
+    if (profile.name) p_name.value = profile.name;
+    if (profile.phone) p_phone.value = profile.phone;
+
+    // Handle Location Variants
+    if (profile.location && profile.location.lat) {
+      userLat = profile.location.lat;
+      userLng = profile.location.lng;
+      // Nested address?
+      if (profile.address) {
+        p_address.value = profile.address.street || "";
+        p_city.value = profile.address.city || "";
+        p_pincode.value = profile.address.pincode || "";
+        p_state.value = profile.address.state || "";
+      }
+    } else if (profile.lat) {
+      userLat = profile.lat;
+      userLng = profile.lng;
+      // Flat address
+      p_address.value = profile.address_line || "";
+      p_city.value = profile.city || "";
+      p_pincode.value = profile.pincode || "";
+      p_state.value = profile.state || "";
+    }
+
+    // Validate Location
+    if (!userLat || !userLng) {
+      alert("Please set your delivery location in your Profile first!");
+      window.location.href = "/frontend/user/profile.html";
       return;
     }
 
-    itemsBox.innerHTML = data.items
-      .map(
-        (i) => `
-        <div class="checkout-item">
-          <img src="${i.image || "./default.jpg"}" class="thumb">
-          <div class="meta">
-            <p>${i.title}</p>
-            <p class="muted">₹${i.price} × ${i.quantity} = ₹${i.price * i.quantity}</p>
-          </div>
-        </div>`
-      )
-      .join("");
+    // 2. Get Cart Summary (calculates fees based on profile location)
+    const claim = document.getElementById("claimNewUser").checked;
+    const data = await apiRequest(`/checkout/summary?claim_new_user=${claim}`);
+    renderSummary(data);
 
-    subtotalEl.textContent = INR(data.subtotal);
-    deliveryEl.textContent = INR(data.delivery);
-    totalEl.textContent = INR(data.total);
-
-  } catch {
-    itemsBox.innerHTML = `<p class="muted">Unable to load checkout.</p>`;
-    codBtn.disabled = true;
-    onlinePayBtn.disabled = true;
+  } catch (err) {
+    console.error(err);
+    itemsBox.innerHTML = `<p class="error">Checkout failed: ${err.message}</p>`;
+    // Disable buttons
+    codBtn.disabled = onlinePayBtn.disabled = true;
   }
-}
-
-/* ----------------------------------------------------
-   PROFILE POPUP (UNCHANGED)
----------------------------------------------------- */
-async function askForProfile() {
-  return new Promise((resolve) => {
-    const modal = document.getElementById("profileModal");
-    modal.style.display = "block";
-
-    document.getElementById("saveProfileBtn").onclick = async () => {
-      const profile = {
-        name: p_name.value.trim(),
-        phone: p_phone.value.trim(),
-        address: p_address.value.trim(),
-        pincode: p_pincode.value.trim(),
-        city: p_city.value.trim(),
-        state: p_state.value.trim(),
-      };
-
-      if (!profile.name || !profile.phone || !profile.address) return;
-
-      try {
-        await apiRequest("/profile/update", "POST", profile);
-        modal.style.display = "none";
-        resolve();
-      } catch {}
-    };
-  });
-}
-
-function isProfileMissing(err) {
-  return JSON.stringify(err).includes("Profile missing");
 }
 
 /* ----------------------------------------------------
    CREATE ORDER
 ---------------------------------------------------- */
-async function createOrder(payment_method, btn, originalText) {
-  if (!isLoggedIn()) {
-    loginRequiredAnimation(btn, originalText);
-    throw new Error("NOT_LOGGED_IN");
+async function createOrder(payment_method) {
+  const note = noteEl.value || null;
+
+  // Final Validation
+  if (!userLat || !userLng) {
+    alert("Location missing!");
+    return;
   }
 
-  const note = noteEl.value?.trim() || null;
+  // Construct Address Object
+  const deliveryAddress = {
+    name: p_name.value,
+    phone: p_phone.value,
+    address_line: p_address.value,
+    city: p_city.value,
+    pincode: p_pincode.value,
+    state: p_state.value,
+    lat: parseFloat(userLat),
+    lng: parseFloat(userLng)
+  };
+
+  const claimNewUser = document.getElementById("claimNewUser").checked;
 
   try {
-    return await apiRequest("/checkout/create-order", "POST", {
-      note,
+    const order = await apiRequest("/orders/create", "POST", {
       payment_method,
+      note,
+      delivery_address: deliveryAddress,
+      claim_new_user: claimNewUser
     });
-  } catch (err) {
-    if (isProfileMissing(err)) {
-      await askForProfile();
-      return await apiRequest("/checkout/create-order", "POST", {
-        note,
-        payment_method,
-      });
-    }
-    throw err;
-  }
-}
 
-/* ----------------------------------------------------
-   CASH ON DELIVERY
----------------------------------------------------- */
-codBtn.addEventListener("click", async () => {
-  const originalText = "Cash on Delivery";
-  codBtn.disabled = true;
-  codBtn.textContent = "Placing order…";
-
-  try {
-    const order = await createOrder("cod", codBtn, originalText);
-    showOrderSuccessAnimation();
-
-    setTimeout(() => {
+    if (payment_method === "cod") {
       window.location.href = `order-success.html?id=${order.order_id}`;
-    }, 1200);
+    } else {
+      window.location.href = `pay.html?id=${order.order_id}`;
+    }
 
-  } catch {}
-
-  codBtn.disabled = false;
-  codBtn.textContent = originalText;
-});
-
-/* ----------------------------------------------------
-   ONLINE PAYMENT
----------------------------------------------------- */
-onlinePayBtn.addEventListener("click", async () => {
-  const originalText = "Pay Online";
-  onlinePayBtn.disabled = true;
-  onlinePayBtn.textContent = "Preparing payment…";
-
-  try {
-    const order = await createOrder("online", onlinePayBtn, originalText);
-    showOrderSuccessAnimation();
-
-    const razorResp = await apiRequest(`/pay/create/${order.order_id}`, "POST");
-    await loadRazorpayScript();
-
-    new window.Razorpay({
-      key: razorResp.razorpay_key,
-      amount: razorResp.amount * 100,
-      currency: "INR",
-      name: "SAI STORES",
-      description: `Order ${order.order_number}`,
-      order_id: razorResp.razorpay_order_id,
-
-      handler: (resp) => {
-        window.location.href =
-          `order-success.html?id=${order.order_id}&payment_id=${resp.razorpay_payment_id}`;
-      },
-
-      modal: {
-        ondismiss: () => {
-          onlinePayBtn.disabled = false;
-          onlinePayBtn.textContent = originalText;
-        },
-      },
-    }).open();
-
-  } catch {
+  } catch (err) {
+    alert(err.message || "Order creation failed");
+    codBtn.disabled = false;
     onlinePayBtn.disabled = false;
-    onlinePayBtn.textContent = originalText;
   }
-});
+}
 
 /* ----------------------------------------------------
-   LOAD RAZORPAY SCRIPT
+   EVENTS
 ---------------------------------------------------- */
-function loadRazorpayScript() {
-  return new Promise((resolve, reject) => {
-    if (window.Razorpay) return resolve();
+codBtn.onclick = () => {
+  codBtn.disabled = true;
+  createOrder("cod");
+};
 
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
+onlinePayBtn.onclick = () => {
+  onlinePayBtn.disabled = true;
+  createOrder("online");
+};
 
 /* ----------------------------------------------------
    INIT
 ---------------------------------------------------- */
 loadSummary();
+
+/* ----------------------------------------------------
+   CHANGE QUANTITY
+---------------------------------------------------- */
+window.changeQuantity = async function (productId, newQty) {
+  try {
+    await apiRequest(`/cart/update-quantity?product_id=${productId}&quantity=${newQty}`, "PUT");
+    await loadSummary();
+  } catch (err) {
+    console.error("Update quantity failed:", err);
+  }
+};

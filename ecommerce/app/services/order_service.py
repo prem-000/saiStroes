@@ -2,32 +2,31 @@ from datetime import datetime
 import random
 from bson import ObjectId
 
-from app.models.order import orders_collection
-from app.services.cart_service import get_cart, clear_cart
 from app.database import get_collection
+from app.services.cart_service import get_cart, clear_cart
+from app.services.delivery_service import calculate_delivery_cost
+from app.services.discount_service import calculate_offers
+from app.utils.distance import haversine_km
 
+orders_collection = get_collection("orders")
 profiles = get_collection("user_profiles")
+shops = get_collection("shop_profiles")
 
 
-# ----------------------------------------------------
-# ORDER NUMBER GENERATOR
-# ----------------------------------------------------
 def _generate_order_number():
     ts = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     rnd = random.randint(1000, 9999)
     return f"ORD{ts}{rnd}"
 
-
 # ----------------------------------------------------
-# CREATE ORDER (COD / ONLINE, PROVIDER BASED)
+# CREATE ORDER (FINAL – DISTANCE BASED)
 # ----------------------------------------------------
 async def create_order(
     user_id: str,
-    payment_method: str,            # "cod" | "online"
-    delivery_provider: str,          # "local" | "express" | "ekart"
-    pricing: dict,                   # snapshot from /checkout/summary
+    payment_method: str,
+    delivery_address: dict,
     note: str | None = None,
-    profile: dict | None = None
+    claim_new_user: bool = False  
 ):
     cart = await get_cart(user_id)
     items = cart.get("items", [])
@@ -36,62 +35,80 @@ async def create_order(
     if not items:
         return None
 
-    # -------------------------------------------------
-    # PROFILE SNAPSHOT
-    # -------------------------------------------------
-    if profile is None:
-        saved = await profiles.find_one({"user_id": user_id})
-        if not saved:
-            raise Exception("Profile missing")
+    # ---------------- USER LOCATION ----------------
+    user_lat = delivery_address["lat"]
+    user_lng = delivery_address["lng"]
 
-        saved.pop("_id", None)
-        saved.pop("user_id", None)
-        profile = saved
+    # ---------------- SHOP LOCATION ----------------
+    # Assuming single shop owner for now or first item's owner
+    owner_id = items[0]["owner_id"]
+    shop = await shops.find_one({"owner_id": owner_id})
+    if not shop or not shop.get("location"):
+        raise Exception("Shop location missing")
 
-    # -------------------------------------------------
-    # PAYMENT LOGIC
-    # -------------------------------------------------
-    total = pricing["payable"]
+    shop_lat = shop["location"]["lat"]
+    shop_lng = shop["location"]["lng"]
 
-    if payment_method == "cod":
-        payment_status = "pending"
-        paid_amount = 0.0
-    else:  # online
-        payment_status = "pending"   # webhook will mark paid
-        paid_amount = total
+    # ---------------- DISTANCE ----------------
+    distance_km = haversine_km(
+        user_lat, user_lng,
+        shop_lat, shop_lng
+    )
 
-    shop_owner_ids = list({str(i.get("owner_id")) for i in items})
+    # ---------------- DELIVERY FEE ----------------
+    # Use Centralized Service
+    delivery_info = calculate_delivery_cost(distance_km, cart_total)
+    delivery_fee = delivery_info["fee"]
 
-    # -------------------------------------------------
-    # ORDER DOCUMENT (SNAPSHOT SAFE)
-    # -------------------------------------------------
+    # ---------------- DISCOUNTS ----------------
+    # Use Centralized Service
+    offers = await calculate_offers(user_id, cart_total, claim_new_user)
+    discount_amount = offers["discount_amount"]
+    
+    # ---------------- FINAL TOTAL ----------------
+    total = cart_total + delivery_fee - discount_amount
+    total = max(0, total) # Safety
+
+    # ---------------- PROFILE SNAPSHOT ----------------
+    profile = await profiles.find_one({"user_id": user_id})
+    if not profile:
+        raise Exception("Profile missing")
+
+    profile.pop("_id", None)
+    profile.pop("user_id", None)
+
+    # ---------------- PAYMENT ----------------
+    payment_status = "pending"
+    paid_amount = 0 if payment_method == "cod" else total
+
+    # ---------------- ORDER DOC ----------------
     order_doc = {
         "user_id": user_id,
         "items": items,
 
-        # pricing snapshot
-        "cart_total": pricing["subtotal"],
-        "delivery_provider": delivery_provider,
-        "delivery_fee": pricing["delivery_fee"],
-        "delivery_discount": pricing["delivery_discount"],
-        "total": pricing["payable"],
+        "cart_total": cart_total,
+        "delivery_fee": delivery_fee,
+        "delivery_breakdown": delivery_info["breakdown"],
+        "delivery_distance_km": distance_km,
+        
+        "discount_amount": discount_amount,
+        "discount_code": offers["applied_coupon"],
+        "discount_msg": offers["message"],
+        
+        "total": total,
 
-        # payment
         "payment_method": payment_method,
         "payment_status": payment_status,
         "paid_amount": paid_amount,
 
-        # meta
         "status": "pending",
         "order_number": _generate_order_number(),
         "created_at": datetime.utcnow(),
         "note": note or "",
 
-        # routing
-        "shop_owner_ids": shop_owner_ids,
+        "shop_owner_ids": [owner_id],
         "razorpay_order_id": None,
 
-        # snapshot
         "user_profile": profile
     }
 
@@ -102,15 +119,15 @@ async def create_order(
         "order_id": str(result.inserted_id),
         "order_number": order_doc["order_number"],
         "payment_method": payment_method,
-        "payment_status": payment_status,
-        "total": pricing["payable"],
-        "delivery_provider": delivery_provider,
+        "delivery_fee": delivery_fee,
+        "distance_km": distance_km,
+        "total": total,
         "status": "pending"
     }
 
 
 # ----------------------------------------------------
-# ATTACH RAZORPAY ORDER ID
+# SUPPORTING FUNCTIONS (REQUIRED BY ORDERS ROUTER)
 # ----------------------------------------------------
 async def attach_razorpay_order(order_id: str, razorpay_id: str):
     await orders_collection.update_one(
@@ -119,9 +136,6 @@ async def attach_razorpay_order(order_id: str, razorpay_id: str):
     )
 
 
-# ----------------------------------------------------
-# MARK ONLINE PAYMENT SUCCESS (WEBHOOK)
-# ----------------------------------------------------
 async def mark_payment_success(order_id: str):
     await orders_collection.update_one(
         {"_id": ObjectId(order_id)},
@@ -129,26 +143,22 @@ async def mark_payment_success(order_id: str):
     )
 
 
-# ----------------------------------------------------
-# GET ORDERS BY USER
-# ----------------------------------------------------
 async def get_orders_by_user(user_id: str):
     orders = []
-
-    async for o in orders_collection.find({"user_id": user_id}).sort("created_at", -1):
+    async for o in orders_collection.find(
+        {"user_id": user_id}
+    ).sort("created_at", -1):
         o["order_id"] = str(o["_id"])
         o.pop("_id", None)
         orders.append(o)
-
     return orders
 
 
-# ----------------------------------------------------
-# GET SINGLE ORDER
-# ----------------------------------------------------
 async def get_order_by_id(order_id: str, user_id: str | None = None):
     try:
-        o = await orders_collection.find_one({"_id": ObjectId(order_id)})
+        o = await orders_collection.find_one(
+            {"_id": ObjectId(order_id)}
+        )
     except:
         return None
 

@@ -24,6 +24,11 @@ async def create_product(product_data, owner):
 
     # Assign owner
     data["owner_id"] = str(owner["_id"])
+    
+    # Metadata for tags
+    from datetime import datetime
+    data["created_at"] = datetime.utcnow()
+    data["sold_count"] = 0
 
     result = await products_collection.insert_one(data)
     return str(result.inserted_id)

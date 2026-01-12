@@ -82,6 +82,8 @@ async function loadCategorySections() {
                         <section class="horizontal-scroll" id="list-${category}">
                             ${products.map(p => `
                                 <div class="product-card">
+                                    ${p.tags && p.tags.includes("new") ? '<span class="product-tag tag-new">New</span>' : ''}
+                                    ${p.tags && p.tags.includes("best_seller") ? '<span class="product-tag tag-best-selling">Best Seller</span>' : ''}
                                     <img src="${p.image || './default.jpg'}" loading="lazy" class="product-img">
                                     <h3>${p.title}</h3>
                                     <p class="price">₹${p.price}</p>
@@ -219,10 +221,30 @@ async function loadSingleProduct() {
                     <h3 class="section-title">You may also like</h3>
                     <div id="recommendedList" class="recommended-list"></div>
                     </div>
+
+                    <!-- REVIEWS SECTION -->
+                    <div class="reviews-section">
+                        <h3 class="section-title">Customer Reviews</h3>
+                        <div id="reviewList" class="review-list"></div>
+                        
+                        <div class="review-form">
+                            <h4>Write a Review</h4>
+                            <select id="reviewRating">
+                                <option value="5">★★★★★ (5/5)</option>
+                                <option value="4">★★★★☆ (4/5)</option>
+                                <option value="3">★★★☆☆ (3/5)</option>
+                                <option value="2">★★☆☆☆ (2/5)</option>
+                                <option value="1">★☆☆☆☆ (1/5)</option>
+                            </select>
+                            <textarea id="reviewComment" placeholder="Share your thoughts..."></textarea>
+                            <button onclick="submitReview('${p.id}')">Submit Review</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
         loadRecommendations(productId);
+        loadReviews(productId);
     } catch {
         container.innerHTML = `<p>Product not found.</p>`;
     }
@@ -313,51 +335,51 @@ window.viewProduct = (id) => {
     ADD TO CART
 -------------------------------------------------- */
 async function addToCartBackend(productId, quantity = 1, btn) {
-  if (!btn) return;
+    if (!btn) return;
 
-  const originalText = btn.innerText;
+    const originalText = btn.innerText;
 
-  const token =
-    localStorage.getItem("user_token") ||
-    localStorage.getItem("shop_owner_token");
+    const token =
+        localStorage.getItem("user_token") ||
+        localStorage.getItem("shop_owner_token");
 
-  if (!token) {
-    btn.classList.add("login-required");
-    btn.innerText = "Login first";
+    if (!token) {
+        btn.classList.add("login-required");
+        btn.innerText = "Login first";
 
-    setTimeout(() => {
-      btn.classList.remove("login-required");
-      btn.innerText = originalText;
-    }, 1500);
+        setTimeout(() => {
+            btn.classList.remove("login-required");
+            btn.innerText = originalText;
+        }, 1500);
 
-    return;
-  }
+        return;
+    }
 
-  try {
-    btn.classList.add("loading");
-    btn.innerText = "Adding...";
+    try {
+        btn.classList.add("loading");
+        btn.innerText = "Adding...";
 
-    await apiRequest(
-      `/cart/add?product_id=${productId}&quantity=${quantity}`,
-      "POST"
-    );
+        await apiRequest(
+            `/cart/add?product_id=${productId}&quantity=${quantity}`,
+            "POST"
+        );
 
-    await updateCartCount();
+        await updateCartCount();
 
-   btn.classList.remove("loading");
-    btn.innerText = "Added ✓";
+        btn.classList.remove("loading");
+        btn.innerText = "Added ✓";
 
-    /* reset after 3 seconds */
-    setTimeout(() => {
-    btn.innerText = "Add to Cart";
-    btn.disabled = false;
-    }, 3000);
+        /* reset after 3 seconds */
+        setTimeout(() => {
+            btn.innerText = "Add to Cart";
+            btn.disabled = false;
+        }, 3000);
 
 
-  } catch {
-    btn.classList.remove("loading");
-    btn.innerText = originalText;
-  }
+    } catch {
+        btn.classList.remove("loading");
+        btn.innerText = originalText;
+    }
 }
 
 window.addToCart = addToCartBackend;
@@ -366,17 +388,164 @@ window.addToCart = addToCartBackend;
     BUY NOW
 -------------------------------------------------- */
 window.buyNow = async (id) => {
-  const tempBtn = document.createElement("button");
-  await addToCartBackend(id, 1, tempBtn);
-  window.location.href = "cart.html";
+    const tempBtn = document.createElement("button");
+    await addToCartBackend(id, 1, tempBtn);
+    window.location.href = "cart.html";
 };
+
+/* --------------------------------------------------
+   BANNERS (HOMEPAGE ONLY)
+-------------------------------------------------- */
+let bannerInterval;
+
+async function loadBanners() {
+    const slider = document.getElementById("bannerSlider");
+    const wrapper = slider ? slider.parentElement : null;
+    if (!slider || !wrapper) return; // not homepage
+
+    try {
+        const banners = await apiRequest("/api/banners");
+
+        if (!banners || banners.length === 0) {
+            wrapper.style.display = "none";
+            return;
+        }
+
+        // 1. Render Slides
+        slider.innerHTML = banners.map(b => `
+            <div class="banner-slide">
+                <img src="${b.image}" alt="${b.title}" loading="lazy">
+            </div>
+        `).join("");
+
+        // 2. Render Dots
+        const existingDots = wrapper.querySelector(".banner-dots");
+        if (existingDots) existingDots.remove();
+
+        const dotsContainer = document.createElement("div");
+        dotsContainer.className = "banner-dots";
+
+        banners.forEach((_, i) => {
+            const dot = document.createElement("div");
+            dot.className = `dot ${i === 0 ? "active" : ""}`;
+            dot.onclick = () => {
+                scrollToBanner(i);
+                resetBannerTimer(); // Reset timer on manual interaction
+            };
+            dotsContainer.appendChild(dot);
+        });
+
+        wrapper.appendChild(dotsContainer);
+
+        // 3. Listen for scroll to update dots (e.g. user swipe)
+        slider.addEventListener("scroll", () => {
+            const index = Math.round(slider.scrollLeft / slider.offsetWidth);
+            updateBannerDots(index);
+        }, { passive: true });
+
+        // 4. Start Timer
+        startBannerAutoScroll();
+
+    } catch (err) {
+        console.error("Failed loading banners:", err);
+    }
+}
+
+function updateBannerDots(index) {
+    const dots = document.querySelectorAll(".banner-dots .dot");
+    dots.forEach((d, i) => {
+        if (i === index) d.classList.add("active");
+        else d.classList.remove("active");
+    });
+}
+
+function scrollToBanner(index) {
+    const slider = document.getElementById("bannerSlider");
+    if (!slider) return;
+    slider.scrollTo({
+        left: slider.offsetWidth * index,
+        behavior: "smooth"
+    });
+}
+
+function startBannerAutoScroll() {
+    if (bannerInterval) clearInterval(bannerInterval);
+    bannerInterval = setInterval(() => {
+        const slider = document.getElementById("bannerSlider");
+        if (!slider || slider.children.length === 0) return;
+
+        let index = Math.round(slider.scrollLeft / slider.offsetWidth);
+        index = (index + 1) % slider.children.length;
+        scrollToBanner(index);
+    }, 4000);
+}
+
+function resetBannerTimer() {
+    startBannerAutoScroll();
+}
 
 /* --------------------------------------------------
     INITIAL LOAD
 -------------------------------------------------- */
+/* --------------------------------------------------
+    REVIEWS
+-------------------------------------------------- */
+async function loadReviews(productId) {
+    const list = document.getElementById("reviewList");
+    if (!list) return;
+
+    try {
+        const reviews = await apiRequest(`/reviews/${productId}`);
+
+        if (reviews.length === 0) {
+            list.innerHTML = `<p class="muted">No reviews yet. Be the first!</p>`;
+            return;
+        }
+
+        list.innerHTML = reviews.map(r => `
+            <div class="review-card">
+                <div class="review-header">
+                    <strong>${r.username}</strong>
+                    <span class="stars">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</span>
+                </div>
+                <p>${r.comment}</p>
+                <small class="muted">${new Date(r.created_at).toLocaleDateString()}</small>
+            </div>
+        `).join("");
+
+    } catch (err) {
+        console.error("Failed to load reviews:", err);
+    }
+}
+
+window.submitReview = async (productId) => {
+    const rating = document.getElementById("reviewRating").value;
+    const comment = document.getElementById("reviewComment").value;
+
+    if (!comment) {
+        alert("Please write a comment");
+        return;
+    }
+
+    try {
+        await apiRequest("/reviews/", "POST", {
+            product_id: productId,
+            rating: parseInt(rating),
+            comment: comment
+        });
+
+        alert("Review submitted!");
+        document.getElementById("reviewComment").value = "";
+        loadReviews(productId);
+    } catch (err) {
+        alert(err.message || "Failed to submit review");
+    }
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
     await loadAllProducts();
     initSearch();
+    loadBanners();
 
     if (productList) loadCategorySections();
     if (categoryGrid) loadCategories();

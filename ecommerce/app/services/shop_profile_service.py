@@ -2,23 +2,36 @@
 
 from app.database import get_collection
 
-shops_collection = get_collection("shops")
+shops = get_collection("shop_profiles")
 
-async def create_or_update_shop(owner_id: str, data: dict):
-    await shops_collection.update_one(
+
+async def create_or_update_shop(owner_id: str, payload: dict):
+    # HARD ASSERT (debug safety)
+    if not payload.get("location"):
+        raise Exception("Location missing in payload")
+
+    await shops.update_one(
         {"owner_id": owner_id},
         {
             "$set": {
                 "owner_id": owner_id,
-                "shop_name": data["shop_name"],
-                "category": data["category"],
-                "phone": data["phone"],
-                "address": data["address"],
-                "city": data["city"],
-                "pincode": data["pincode"],
-                "location": data["location"],   # lat/lng
-                "is_completed": True             # 🔥 THIS UNBLOCKS ORDERS
+                "shop_name": payload["shop_name"],
+                "category": payload["category"],
+                "phone": payload["phone"],
+                "address": payload["address"],
+                "city": payload["city"],
+                "pincode": payload["pincode"],
+                "location": {
+                    "lat": payload["location"]["lat"],
+                    "lng": payload["location"]["lng"],
+                },
             }
         },
         upsert=True
     )
+
+async def get_shop_profile(owner_id: str):
+    profile = await shops.find_one({"owner_id": owner_id})
+    if profile:
+        profile["_id"] = str(profile["_id"])
+    return profile

@@ -1,8 +1,8 @@
 import { apiRequest } from "../api.js";
 
-// -------------------------------
-// ELEMENTS
-// -------------------------------
+/* ----------------------------------------------------
+   ELEMENTS
+---------------------------------------------------- */
 const nameEl = document.getElementById("p_name");
 const phoneEl = document.getElementById("p_phone");
 const addressEl = document.getElementById("p_address");
@@ -12,13 +12,86 @@ const stateEl = document.getElementById("p_state");
 const saveBtn = document.getElementById("saveBtn");
 const infoBox = document.getElementById("infoSection");
 
-// -------------------------------
-// LOAD PROFILE
-// -------------------------------
+/* ----------------------------------------------------
+   MAP STATE
+---------------------------------------------------- */
+let map = null;
+let marker = null;
+let selectedLat = null;
+let selectedLng = null;
+
+/* ----------------------------------------------------
+   REVERSE GEOCODING (AUTO ADDRESS FILL)
+---------------------------------------------------- */
+async function fillAddressFromLatLng(lat, lng) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+    );
+
+    const data = await res.json();
+    if (!data || !data.address) return;
+
+    addressEl.value = data.display_name || addressEl.value;
+
+    cityEl.value =
+      data.address.city ||
+      data.address.town ||
+      data.address.village ||
+      "";
+
+    stateEl.value = data.address.state || "";
+    pincodeEl.value = data.address.postcode || "";
+  } catch (err) {
+    console.error("Reverse geocoding failed:", err);
+  }
+}
+
+/* ----------------------------------------------------
+   INIT LEAFLET MAP
+---------------------------------------------------- */
+function initMap(lat = 12.9716, lng = 77.5946) {
+  if (map) map.remove();
+
+  map = L.map("map").setView([lat, lng], 14);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+  selectedLat = lat;
+  selectedLng = lng;
+
+  // drag pin
+  marker.on("dragend", async () => {
+    const pos = marker.getLatLng();
+    selectedLat = pos.lat;
+    selectedLng = pos.lng;
+    await fillAddressFromLatLng(selectedLat, selectedLng);
+  });
+
+  // click map
+  map.on("click", async (e) => {
+    marker.setLatLng(e.latlng);
+    selectedLat = e.latlng.lat;
+    selectedLng = e.latlng.lng;
+    await fillAddressFromLatLng(selectedLat, selectedLng);
+  });
+}
+
+/* ----------------------------------------------------
+   LOAD PROFILE
+---------------------------------------------------- */
 async function loadProfile() {
   try {
     const profile = await apiRequest("/profile/me");
-    if (!profile) return;
+
+    if (!profile || Object.keys(profile).length === 0) {
+      initMap();
+      return;
+    }
 
     nameEl.value = profile.name ?? "";
     phoneEl.value = profile.phone ?? "";
@@ -26,15 +99,27 @@ async function loadProfile() {
     pincodeEl.value = profile.pincode ?? "";
     cityEl.value = profile.city ?? "";
     stateEl.value = profile.state ?? "";
+
+    if (profile.lat && profile.lng) {
+      initMap(profile.lat, profile.lng);
+    } else {
+      initMap();
+    }
   } catch (err) {
     console.error("Failed to load profile:", err);
+    initMap();
   }
 }
 
-// -------------------------------
-// SAVE PROFILE (NETWORK-BASED)
-// -------------------------------
+/* ----------------------------------------------------
+   SAVE PROFILE
+---------------------------------------------------- */
 async function saveProfile() {
+  if (!selectedLat || !selectedLng) {
+    alert("Please pin your delivery location on the map.");
+    return;
+  }
+
   const payload = {
     name: nameEl.value.trim(),
     phone: phoneEl.value.trim(),
@@ -42,33 +127,32 @@ async function saveProfile() {
     pincode: pincodeEl.value.trim(),
     city: cityEl.value.trim(),
     state: stateEl.value.trim(),
+    lat: selectedLat,
+    lng: selectedLng,
   };
 
-  if (!payload.name || !payload.phone || !payload.address) return;
+  if (!payload.name || !payload.phone || !payload.address) {
+    alert("Name, phone, and address are required.");
+    return;
+  }
 
-  // enter loading state
   saveBtn.classList.add("loading");
 
   try {
     await apiRequest("/profile/update", "POST", payload);
-
-    // success feedback (no alert)
     saveBtn.classList.add("success");
     setTimeout(() => saveBtn.classList.remove("success"), 1200);
   } catch (err) {
     console.error("Profile update failed:", err);
+    alert("Failed to save profile. Try again.");
   } finally {
-    // exit loading ONLY after network finishes
     saveBtn.classList.remove("loading");
   }
 }
 
-// single event listener (important)
-saveBtn.addEventListener("click", saveProfile);
-
-// -------------------------------
-// FAQ TOGGLE
-// -------------------------------
+/* ----------------------------------------------------
+   UI ACTIONS
+---------------------------------------------------- */
 window.toggleFAQ = function () {
   const faq = document.getElementById("faqSection");
   faq.style.display = faq.style.display === "none" ? "block" : "none";
@@ -81,35 +165,25 @@ document.addEventListener("click", (e) => {
   ans.style.display = ans.style.display === "block" ? "none" : "block";
 });
 
-// -------------------------------
-// ABOUT SECTION
-// -------------------------------
 window.showAbout = function () {
   infoBox.style.display = "block";
   infoBox.innerHTML = `
     <h4>About Sai Stores</h4>
-    <p>Sai Stores provides quality products with faster delivery.</p>
-    <p>All payments are handled securely using Razorpay.</p>
+    <p>Sai Stores provides quality products with fast local delivery.</p>
+    <p>Payments are securely processed using Razorpay.</p>
   `;
   document.getElementById("faqSection").style.display = "none";
 };
 
-// -------------------------------
-// FEEDBACK SECTION
-// -------------------------------
 window.showFeedback = function () {
   infoBox.style.display = "block";
   infoBox.innerHTML = `
     <h4>Feedback</h4>
-    <p>Contact us at:</p>
-    <p><b>support@sai-stores.com</b></p>
+    <p>Email us at <b>support@sai-stores.com</b></p>
   `;
   document.getElementById("faqSection").style.display = "none";
 };
 
-// -------------------------------
-// OTHER ACTIONS
-// -------------------------------
 window.goToCart = () => (window.location.href = "cart.html");
 
 window.logout = () => {
@@ -117,9 +191,9 @@ window.logout = () => {
   window.location.href = "login.html";
 };
 
-// -------------------------------
-// THEME TOGGLE
-// -------------------------------
+/* ----------------------------------------------------
+   THEME TOGGLE
+---------------------------------------------------- */
 const toggle = document.getElementById("themeToggle");
 const root = document.documentElement;
 
@@ -141,5 +215,8 @@ toggle.onclick = () => {
   updateIcon();
 };
 
-// INIT
+/* ----------------------------------------------------
+   INIT
+---------------------------------------------------- */
+saveBtn.addEventListener("click", saveProfile);
 loadProfile();

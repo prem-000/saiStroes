@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,103 +8,107 @@
 
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/shop_owner.css">
+    <link rel="stylesheet" href="../css/tracking.css">
 
     <!-- Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <!-- Leaflet (MAP) -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
 
-<nav class="topbar">
-    <h2><i class="fa-solid fa-receipt"></i> Order Details</h2>
+    <nav class="topbar">
+        <h2><i class="fa-solid fa-receipt"></i> Order Details</h2>
 
-    <div class="nav-links">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="orders.html">Orders</a>
-    </div>
-</nav>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="orders.html">Orders</a>
+        </div>
+    </nav>
 
-<section class="order-details-container">
+    <section class="order-details-container">
 
-    <!-- ORDER INFO -->
-    <div class="order-box">
-        <h3>Order Info</h3>
-        <p><b>Order ID:</b> <span id="orderId"></span></p>
-        <p><b>Status:</b> <span id="orderStatus"></span></p>
-        <p><b>Date:</b> <span id="orderDate"></span></p>
-        <p><b>Distance:</b> <span id="orderDistance">—</span></p>
-    </div>
+        <!-- ORDER INFO -->
+        <div class="order-box">
+            <h3>Order Info</h3>
+            <p><b>Order ID:</b> <span id="orderId"></span></p>
+            <p><b>Status:</b> <span id="orderStatus"></span></p>
+            <p><b>Date:</b> <span id="orderDate"></span></p>
+            <p><b>Distance:</b> <span id="orderDistance">—</span></p>
+        </div>
 
-    <!-- MAP -->
-    <div class="order-box">
-        <h3>Delivery Route</h3>
-        <div id="orderMap" style="height:320px;border-radius:10px;"></div>
-    </div>
+        <!-- TRACKING TIMELINE -->
+        <div class="tracking-wrapper">
+            <div class="tracking-title">Order Status Timeline</div>
+            <div id="trackingTimeline" class="timeline">
+                <!-- JS Populated -->
+            </div>
+        </div>
 
-    <!-- PAYMENT -->
-    <div class="order-box">
-        <h3>Payment</h3>
-        <p><b>Method:</b> <span id="paymentMethod"></span></p>
-        <p><b>Status:</b> <span id="paymentStatus"></span></p>
-        <p><b>Paid:</b> <span id="paidAmount"></span></p>
-        <p id="paymentNote" class="muted"></p>
-    </div>
+        <!-- MAP -->
+        <div class="order-box">
+            <h3>Delivery Route</h3>
+            <div id="orderMap" style="height:320px;border-radius:10px;"></div>
+        </div>
 
-    <!-- CUSTOMER -->
-    <div class="order-box">
-        <h3>Customer</h3>
-        <p><b>Name:</b> <span id="custName"></span></p>
-        <p><b>Phone:</b> <span id="custPhone"></span></p>
-        <div id="custAddress" class="address-box"></div>
-    </div>
+        <!-- PAYMENT -->
+        <div class="order-box">
+            <h3>Payment</h3>
+            <p><b>Method:</b> <span id="paymentMethod"></span></p>
+            <p><b>Status:</b> <span id="paymentStatus"></span></p>
+            <p><b>Paid:</b> <span id="paidAmount"></span></p>
+            <p id="paymentNote" class="muted"></p>
+        </div>
 
-    <!-- ITEMS -->
-    <div class="order-box">
-        <h3>Items</h3>
-        <table class="order-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody id="itemsBody"></tbody>
-        </table>
-    </div>
+        <!-- CUSTOMER -->
+        <div class="order-box">
+            <h3>Customer</h3>
+            <p><b>Name:</b> <span id="custName"></span></p>
+            <p><b>Phone:</b> <span id="custPhone"></span></p>
+            <div id="custAddress" class="address-box"></div>
+        </div>
 
-    <!-- STATUS UPDATE -->
-    <div class="order-box">
-        <h3>Update Status</h3>
+        <!-- ITEMS -->
+        <div class="order-box">
+            <h3>Items</h3>
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+            </table>
+        </div>
 
-        <select id="statusSelect">
-            <option value="pending">Pending</option>
-            <option value="accepted">Accepted</option>
-            <option value="packed">Packed</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-        </select>
+        <!-- STATUS UPDATE -->
+        <div class="order-box">
+            <h3>Update Status</h3>
 
-        <button class="btn-primary" onclick="updateStatus()">Update</button>
-    </div>
+            <select id="statusSelect">
+                <option value="pending">Pending</option>
+                <option value="accepted">Accepted</option>
+                <option value="packed">Packed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
 
-</section>
+            <button class="btn-primary" onclick="updateStatus()">Update</button>
+        </div>
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    </section>
 
-<!-- App JS -->
-<script type="module" src="../js/shop_owner/order_view.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- App JS -->
+    <script type="module" src="../js/shop_owner/order_view.js"></script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.routers import auth, products, users_router,cart,orders,admin_auth,shop_owner_auth,shop_owner_orders,admin_users,admin_shop_owners,admin_dashboard,shop_owner_dashboard,wishlist,admin_management,notifications,shop_owner_products,user_products,category_router,checkout,profile,shop_owner_profile,shop_owner_bank
+from app.routers import auth, products, users_router,cart,orders,admin_auth,shop_owner_auth,shop_owner_orders,admin_users,admin_shop_owners,admin_dashboard,shop_owner_dashboard,wishlist,admin_management,notifications,shop_owner_products,user_products,category_router,checkout,profile,shop_owner_profile,shop_owner_bank,banners,reviews
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
@@ -46,3 +47,6 @@ app.include_router(notifications.router)
 app.include_router(profile.router)
 app.include_router(shop_owner_profile.router)
 app.include_router(shop_owner_bank.router)
+app.include_router(shop_owner_bank.router)
+app.include_router(banners.router)
+app.include_router(reviews.router)

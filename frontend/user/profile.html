@@ -1,139 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, user-scalable=no"
+  />
 
-    <title>User Profile</title>
-    <link rel="stylesheet" href="../css/profile.css">
-    <link
+  <title>User Profile</title>
+
+  <!-- YOUR CSS -->
+  <link rel="stylesheet" href="../css/profile.css" />
+
+  <!-- FONT AWESOME -->
+  <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
+  />
 
+  <!-- LEAFLET CSS (REQUIRED) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 </head>
 
 <body>
+  <div class="header">
+    <h2>User Profile</h2>
+  </div>
 
+  <div class="container">
+    <!-- THEME TOGGLE -->
+    <button id="themeToggle" class="theme-btn">🌙</button>
 
-    <div class="header">
-        <h2>User Profile</h2>
-    </div>
+    <!-- PROFILE CARD -->
+    <div class="section-card">
+      <h3>Personal Details</h3>
 
-    <div class="container">
-        <button id="themeToggle" class="theme-btn">🌙</button>
+      <label>Full Name</label>
+      <input id="p_name" placeholder="Enter name" />
 
-        <!-- Profile Section -->
-        <div class="section-card">
-            <h3>Personal Details</h3>
+      <label>Phone Number</label>
+      <input id="p_phone" placeholder="Enter phone number" />
 
-            <label>Full Name</label>
-            <input id="p_name" placeholder="Enter name">
+      <label>Address</label>
+      <textarea
+        id="p_address"
+        placeholder="Enter full delivery address"
+      ></textarea>
 
-            <label>Phone Number</label>
-            <input id="p_phone" placeholder="Enter phone number">
-
-            <label>Address</label>
-            <textarea id="p_address" placeholder="Enter full address"></textarea>
-
-            <div class="grid-3">
-                <div>
-                    <label>Pincode</label>
-                    <input id="p_pincode" placeholder="Pincode">
-                </div>
-
-                <div>
-                    <label>City</label>
-                    <input id="p_city" placeholder="City">
-                </div>
-
-                <div>
-                    <label>State</label>
-                    <input id="p_state" placeholder="State">
-                </div>
-            </div>
-
-            <button id="saveBtn" class="btn-primary">
-            <span class="btn-text">Save Profile</span>
-            <span class="btn-spinner"></span>
-            </button>
+      <div class="grid-3">
+        <div>
+          <label>Pincode</label>
+          <input id="p_pincode" placeholder="Pincode" />
         </div>
 
-        <!-- Settings Section -->
-        <div class="section-card">
-            <h3>Settings</h3>
-
-            <!-- CART -->
-            <button class="btn-option" onclick="goToCart()">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span>Go to Cart</span>
-            </button>
-
-            <button class="btn-option" onclick="toggleFAQ()">
-            <i class="fa-solid fa-credit-card"></i>
-            <span>Payment Information</span>
-            </button>
-
-            <!-- FAQ SECTION -->
-            <div id="faqSection" class="faq-section" style="display:none;">
-
-                <div class="faq-item">
-                    <button class="faq-question">How do payments work?</button>
-                    <div class="faq-answer">
-                        We create a secure Razorpay payment order.<br>
-                        You pay using UPI, Card, Netbanking, or Wallet.<br>
-                        Razorpay confirms the payment instantly.
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question">Is my payment secure?</button>
-                    <div class="faq-answer">
-                        Yes. Razorpay uses PCI-DSS Level 1 security.<br>
-                        Your card/bank details are never stored.
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question">Why did my payment fail?</button>
-                    <div class="faq-answer">
-                        Payments may fail due to:<br>
-                        • Bank server downtime<br>
-                        • Incorrect OTP<br>
-                        • Insufficient balance
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <button class="faq-question">When will I get a refund?</button>
-                    <div class="faq-answer">
-                        Refunds are processed by Razorpay.<br>
-                        Estimated time: 3–5 working days.
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- ABOUT & FEEDBACK (INLINE) -->
-           <button class="btn-option" onclick="showAbout()">
-            <i class="fa-solid fa-circle-info"></i>
-            <span>About Us</span>
-            </button>
-
-            <button class="btn-option" onclick="showFeedback()">
-            <i class="fa-solid fa-envelope"></i>
-            <span>Feedback</span>
-            </button>
-
-            <!-- INLINE INFO BOX -->
-            <div id="infoSection" class="info-section" style="display:none;"></div>
-
-            <!-- LOGOUT -->
-            <button class="btn-danger" onclick="logout()">Logout</button>
+        <div>
+          <label>City</label>
+          <input id="p_city" placeholder="City" />
         </div>
 
+        <div>
+          <label>State</label>
+          <input id="p_state" placeholder="State" />
+        </div>
+      </div>
+
+      <!-- MAP -->
+      <label style="margin-top: 12px;">Pin Your Delivery Location</label>
+      <div
+        id="map"
+        style="height: 260px; border-radius: 12px; margin-bottom: 8px;"
+      ></div>
+      <p class="muted">Tap or drag the pin to your exact location</p>
+
+      <!-- SAVE BUTTON -->
+      <button id="saveBtn" class="btn-primary">
+        <span class="btn-text">Save Profile</span>
+        <span class="btn-spinner"></span>
+      </button>
     </div>
 
-    <script type="module" src="../js/user/profile.js"></script>
+    <!-- SETTINGS CARD -->
+    <div class="section-card">
+      <h3>Settings</h3>
+
+      <button class="btn-option" onclick="goToCart()">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>Go to Cart</span>
+      </button>
+
+      <button class="btn-option" onclick="toggleFAQ()">
+        <i class="fa-solid fa-credit-card"></i>
+        <span>Payment Information</span>
+      </button>
+
+      <!-- FAQ -->
+      <div id="faqSection" class="faq-section" style="display: none;">
+        <div class="faq-item">
+          <button class="faq-question">How do payments work?</button>
+          <div class="faq-answer">
+            We create a secure Razorpay order.<br />
+            Pay via UPI, Card, Netbanking, or Wallet.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Is my payment secure?</button>
+          <div class="faq-answer">
+            Yes. Razorpay uses PCI-DSS Level 1 security.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">When will I get a refund?</button>
+          <div class="faq-answer">
+            Refunds are processed within 3–5 working days.
+          </div>
+        </div>
+      </div>
+
+      <!-- ABOUT -->
+      <button class="btn-option" onclick="showAbout()">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>About Us</span>
+      </button>
+
+      <!-- FEEDBACK -->
+      <button class="btn-option" onclick="showFeedback()">
+        <i class="fa-solid fa-envelope"></i>
+        <span>Feedback</span>
+      </button>
+
+      <!-- INLINE INFO -->
+      <div
+        id="infoSection"
+        class="info-section"
+        style="display: none;"
+      ></div>
+
+      <!-- LOGOUT -->
+      <button class="btn-danger" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- LEAFLET JS (REQUIRED) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- PROFILE JS -->
+  <script type="module" src="../js/user/profile.js"></script>
 </body>
 </html>

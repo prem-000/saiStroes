@@ -1,123 +1,169 @@
 import { apiRequest } from "../api.js";
 
-const ordersList = document.getElementById("ordersList");
+let allOrders = [];
+let currentFilter = 'all';
 
 /* --------------------------------------------------
-   STATUS ICON FUNCTION
+   INIT
 -------------------------------------------------- */
-function getStatusIcon(status) {
-    switch (status) {
-        case "delivered":
-            return `<span style="color:green; font-weight:bold;">✔ Delivered</span>`;
-        case "cancelled":
-            return `<span style="color:red; font-weight:bold;">✖ Cancelled</span>`;
-        default:
-            return `<span style="color:orange; font-weight:bold;">⏳ ${status}</span>`;
-    }
+async function init() {
+    await loadOrders();
 }
+
+init();
 
 /* --------------------------------------------------
    LOAD ORDERS
 -------------------------------------------------- */
 async function loadOrders() {
+    const container = document.getElementById("ordersContainer");
+
     try {
-        const orders = await apiRequest("/orders/");
+        const data = await apiRequest("/orders/");
+        // Reverse to show newest first
+        allOrders = data.reverse();
 
-        if (!orders.length) {
-            ordersList.innerHTML = "<p>No orders yet.</p>";
-            return;
-        }
-
-        const html = await Promise.all(
-            orders.map(async (order) => {
-                const item = order.items?.[0];
-                if (!item) return "";
-
-                const productId = item.product_id;
-
-                let product = {};
-                try {
-                    product = await apiRequest(`/user/products/${productId}`);
-                } catch {
-                    console.warn("Missing product", productId);
-                }
-
-                return `
-                    <div class="order-card" data-order-id="${order.order_id}">
-                        <div class="order-product">
-                            <img src="${product.image || '../img/default.jpg'}" class="order-thumb">
-
-                            <div class="order-prod-info">
-                                <p class="prod-title">${product.title || item.title}</p>
-                                <p class="prod-qty">Qty: ${item.quantity}</p>
-                                <p class="prod-price">₹${item.price}</p>
-                            </div>
-                        </div>
-
-                        <p><span class="label">Order #:</span> ${order.order_number}</p>
-
-                        <p><span class="label">Status:</span> ${getStatusIcon(order.status)}</p>
-
-                        <a href="order-success.html?order_id=${order.order_id}" class="btn-view">
-                            View Details
-                        </a>
-
-                        <button class="btn-wishlist" data-product-id="${productId}" onclick="moveToWishlist(event)">
-                            Move to Wishlist
-                        </button>
-
-                        <button class="btn-delete" onclick="deleteMyOrder('${order.order_id}')">
-                            Delete
-                        </button>
-                    </div>
-                `;
-            })
-        );
-
-        ordersList.innerHTML = html.join("");
+        updateCounts();
+        renderOrders(allOrders);
 
     } catch (err) {
         console.error(err);
-        ordersList.innerHTML = "<p>Failed to load orders.</p>";
+        container.innerHTML = `<p style="text-align:center; color:red">Failed to load orders: ${err.message}</p>`;
     }
 }
 
-loadOrders();
+/* --------------------------------------------------
+   RENDER ORDERS
+-------------------------------------------------- */
+async function renderOrders(orders) {
+    const container = document.getElementById("ordersContainer");
+
+    if (orders.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:#6b7280; margin-top:40px;">No orders found.</p>`;
+        return;
+    }
+
+    // Prepare HTML (Fetch product details in parallel if needed, or use order snapshot)
+    // Using snapshot from order items usually better for performance
+
+    const htmlPromises = orders.map(async (order) => {
+        const item = order.items?.[0] || {};
+        const date = new Date(order.created_at).toLocaleDateString("en-GB", {
+            day: 'numeric', month: 'short', year: 'numeric'
+        });
+
+        // Status Formatting
+        let statusClass = "status-pending"; // default
+        if (order.status === "shipped") statusClass = "status-shipped";
+        if (order.status === "delivered") statusClass = "status-delivered";
+        if (order.status === "cancelled") statusClass = "status-cancelled";
+
+        // Payment Method Map
+        const payMethod = order.payment_method === 'cod' ? 'Cash on Delivery' : 'Online Payment';
+
+        return `
+            <div class="order-row">
+                <img src="${item.image || '../img/default.jpg'}" class="order-thumb" alt="Product">
+                
+                <div class="order-details">
+                    <h3>${item.title}</h3>
+                    <div class="order-meta">
+                        Order ID: <span style="font-family:monospace">${order.order_number}</span> &bull; 
+                        Date: ${date}
+                    </div>
+                    <div class="order-meta">
+                        Payment: ${payMethod}
+                    </div>
+                    <div class="price">₹${order.total}</div>
+                </div>
+
+                <div class="order-actions">
+                    <span class="order-status ${statusClass}">${order.status}</span>
+                    
+                    <a href="order-success.html?order_id=${order.order_id}" class="btn btn-outline">
+                         Details
+                    </a>
+                    
+                    ${order.status === 'pending' ? `
+                        <button class="btn btn-danger" onclick="cancelOrder('${order.order_id}')">
+                            Cancel Order
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+
+    const rows = await Promise.all(htmlPromises);
+    container.innerHTML = rows.join("");
+}
 
 /* --------------------------------------------------
-   DELETE ORDER
+   FILTER TABS
 -------------------------------------------------- */
-window.deleteMyOrder = async function (orderId) {
-    if (!confirm("Delete this order?")) return;
+window.filterOrders = function (status, tabElement) {
+    currentFilter = status;
 
-    try {
-        await apiRequest(`/orders/${orderId}`, "DELETE");
-        alert("Order deleted!");
-        loadOrders();
-    } catch (err) {
-        console.error(err);
-        alert("Failed to delete order");
+    // Update active tab
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tabElement.classList.add('active');
+
+    // Filter
+    if (status === 'all') {
+        renderOrders(allOrders);
+    } else {
+        const filtered = allOrders.filter(o => o.status === status);
+        renderOrders(filtered);
     }
 };
 
 /* --------------------------------------------------
-   MOVE PRODUCT TO WISHLIST
+   SEARCH
 -------------------------------------------------- */
-window.moveToWishlist = async function (event) {
-    const btn = event.currentTarget;
-    const productId = btn.dataset.productId;
-    const card = btn.closest(".order-card");
+window.searchOrders = function () {
+    const term = document.getElementById("searchInput").value.toLowerCase();
 
-    const orderId = card.dataset.orderId;
+    const filtered = allOrders.filter(o =>
+        o.order_number.toLowerCase().includes(term) ||
+        (o.items[0]?.title || "").toLowerCase().includes(term) ||
+        o.status.includes(term)
+    );
+
+    renderOrders(filtered);
+};
+
+/* --------------------------------------------------
+   UPDATE COUNTS
+-------------------------------------------------- */
+function updateCounts() {
+    const all = allOrders.length;
+    const pending = allOrders.filter(o => o.status === 'pending').length;
+    const shipped = allOrders.filter(o => o.status === 'shipped').length;
+    const cancelled = allOrders.filter(o => o.status === 'cancelled').length;
+
+    document.getElementById("count-all").textContent = all;
+    document.getElementById("count-pending").textContent = pending;
+    document.getElementById("count-shipped").textContent = shipped;
+    document.getElementById("count-cancelled").textContent = cancelled;
+}
+
+/* --------------------------------------------------
+   CANCEL ORDER
+-------------------------------------------------- */
+window.cancelOrder = async function (orderId) {
+    if (!confirm("Are you sure you want to cancel this order?")) return;
 
     try {
-        await apiRequest(`/wishlist/add/${productId}`, "POST");
-        await apiRequest(`/orders/item/${orderId}/${productId}`, "DELETE");
+        await apiRequest(`/orders/${orderId}/cancel`, "PUT"); // Assuming endpoint exists or DELETE
+        // Or if you use DELETE for cancel:
+        // await apiRequest(`/orders/${orderId}`, "DELETE"); 
 
-        alert("Moved to wishlist!");
-        loadOrders();
+        // Refresh
+        await loadOrders();
+        alert("Order cancelled successfully");
+
     } catch (err) {
-        console.error(err);
-        alert("Failed to move to wishlist");
+        alert("Failed to cancel order: " + err.message);
     }
 };
+

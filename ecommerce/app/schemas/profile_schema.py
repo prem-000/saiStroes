@@ -8,3 +8,6 @@ class UserProfile(BaseModel):
     pincode: Optional[str] = ""
     city: Optional[str] = ""
     state: Optional[str] = ""
+     # REQUIRED FOR DISTANCE
+    lat: float
+    lng: float

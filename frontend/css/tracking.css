@@ -1,0 +1,100 @@
+/* =========================================
+   VERTICAL TRACKING TIMELINE
+   (Shared by User & Shop Owner)
+========================================= */
+
+.tracking-wrapper {
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.tracking-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #1f2937;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 10px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 40px;
+    padding-bottom: 30px;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+/* Vertical Line */
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 6px;
+    width: 2px;
+    height: 100%;
+    background: #e5e7eb;
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+/* Node (Circle) */
+.timeline-node {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #e5e7eb;
+    z-index: 2;
+}
+
+/* Active State */
+.timeline-item.active .timeline-node {
+    background: #4f46e5;
+    /* Primary Blue */
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+}
+
+.timeline-item.completed .timeline-node {
+    background: #10b981;
+    /* Green */
+    box-shadow: 0 0 0 2px #10b981;
+}
+
+.timeline-item.completed::before {
+    background: #10b981;
+}
+
+/* Content */
+.timeline-date {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 2px;
+    font-weight: 500;
+}
+
+.timeline-status {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.timeline-desc {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-top: 2px;
+}

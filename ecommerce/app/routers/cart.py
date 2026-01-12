@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.utils.oauth2 import get_current_user
 from app.services.cart_service import (
-    add_to_cart, get_cart, remove_from_cart, clear_cart
+    add_to_cart, get_cart, remove_from_cart, clear_cart, update_cart_item_quantity
 )
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
@@ -43,6 +43,19 @@ async def remove_item(product_id: str, user=Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Item not found in cart")
 
     return {"message": "Item removed"}
+
+
+@router.put("/update-quantity")
+async def update_quantity(
+    product_id: str = Query(...),
+    quantity: int = Query(...),
+    user=Depends(get_current_user)
+):
+    user_id = str(user["_id"])
+    updated = await update_cart_item_quantity(user_id, product_id, quantity)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"message": "Quantity updated"}
 
 
 @router.delete("/clear")

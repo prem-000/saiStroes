@@ -1,42 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bank Details</title>
 
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/shop_owner.css">
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
+
 <body>
 
-<nav class="topbar">
-    <h2><i class="fa-solid fa-building-columns"></i> Bank Details</h2>
-</nav>
+    <nav class="topbar">
+        <h2><i class="fa-solid fa-building-columns"></i> Bank Details</h2>
+    </nav>
 
-<section class="form-container">
+    <section class="form-container">
 
-    <div class="form-box">
-        <h3><i class="fa-solid fa-lock"></i> Settlement Account</h3>
+        <div class="form-box">
+            <h3><i class="fa-solid fa-lock"></i> Settlement Account</h3>
 
-        <input id="account_holder" placeholder="Account Holder Name" />
-        <input id="account_number" placeholder="Account Number" />
-        <input id="ifsc" placeholder="IFSC Code" />
-        <input id="bank_name" placeholder="Bank Name" />
-        <input id="upi_id" placeholder="UPI ID (optional)" />
+            <input id="account_holder" placeholder="Account Holder Name" />
+            <input id="account_number" placeholder="Account Number" />
+            <input id="ifsc" placeholder="IFSC Code" />
+            <input id="bank_name" placeholder="Bank Name" />
 
-        <button class="btn-primary" onclick="saveBank()">
-            <i class="fa-solid fa-floppy-disk"></i> Save Bank Details
-        </button>
 
-        <p id="bankMsg" class="form-msg"></p>
-    </div>
+            <button class="btn-primary" onclick="saveBank()">
+                <i class="fa-solid fa-floppy-disk"></i> Save Bank Details
+            </button>
 
-</section>
+            <p id="bankMsg" class="form-msg"></p>
+        </div>
 
-<script type="module" src="../js/shop_owner/shop_bank.js"></script>
+    </section>
+
+    <script type="module" src="../js/shop_owner/shop_bank.js"></script>
 </body>
+
 </html>

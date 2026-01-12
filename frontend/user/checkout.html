@@ -1,16 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Checkout • SAI STORES</title>
   <link rel="stylesheet" href="../css/user.css">
 </head>
+
 <body>
   <header id="header"></header>
 
   <main class="checkout-page">
     <h1>Checkout</h1>
+
+    <!-- OFFERS -->
+    <section class="card offers-box">
+      <h3>Offers & Discounts</h3>
+
+      <!-- New User Toggle -->
+      <div id="newUserSection" class="offer-toggle">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+          <div>
+            <b>New User?</b>
+            <p class="muted" style="margin:2px 0;">Claim ₹150 OFF on first order</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="claimNewUser">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- General Coupon Msg -->
+      <div id="couponMsg" class="coupon-msg" style="display:none;"></div>
+    </section>
 
     <!-- ITEMS LIST -->
     <section id="checkoutItems" class="card">
@@ -19,9 +43,21 @@
 
     <!-- SUMMARY -->
     <aside class="summary-box card">
-      <p><span>Subtotal</span><span id="subtotal">0</span></p>
-      <p><span>Delivery</span><span id="delivery">0</span></p>
-      <p class="total-row"><span>Total</span><span id="total">0</span></p>
+      <p><span>Subtotal</span><span id="subtotal">₹0</span></p>
+
+      <p id="discountRow" style="display:none; color:green;">
+        <span>Coupon <small id="couponCode"
+            style="border:1px dashed green; padding:2px 4px; border-radius:4px;"></small></span>
+        <span id="discountVal">-₹0</span>
+      </p>
+
+      <p>
+        <span>Delivery</span>
+        <span id="delivery">₹0</span>
+      </p>
+      <p class="muted" id="deliveryMsg" style="font-size:12px; text-align:right;">Calculating...</p>
+
+      <p class="total-row"><span>Total</span><span id="total">₹0</span></p>
     </aside>
 
     <label for="note" class="label">Order note (optional)</label>
@@ -36,28 +72,29 @@
 
   <!-- PROFILE POPUP -->
   <div id="profileModal" class="profile-box" style="display:none;">
-      <label>Full Name</label>
-      <input id="p_name" placeholder="Enter name">
+    <label>Full Name</label>
+    <input id="p_name" placeholder="Enter name">
 
-      <label>Phone Number</label>
-      <input id="p_phone" placeholder="Enter phone number">
+    <label>Phone Number</label>
+    <input id="p_phone" placeholder="Enter phone number">
 
-      <label>Address</label>
-      <textarea id="p_address" placeholder="Enter full address"></textarea>
+    <label>Address</label>
+    <textarea id="p_address" placeholder="Enter full address"></textarea>
 
-      <label>Pincode</label>
-      <input id="p_pincode" placeholder="Enter pincode">
+    <label>Pincode</label>
+    <input id="p_pincode" placeholder="Enter pincode">
 
-      <label>City</label>
-      <input id="p_city" placeholder="City">
+    <label>City</label>
+    <input id="p_city" placeholder="City">
 
-      <label>State</label>
-      <input id="p_state" placeholder="State">
+    <label>State</label>
+    <input id="p_state" placeholder="State">
 
-      <button id="saveProfileBtn">Save Profile</button>
+    <button id="saveProfileBtn">Save Profile</button>
   </div>
 
   <!-- JS -->
   <script type="module" src="../js/user/checkout.js"></script>
 </body>
+
 </html>

@@ -11,17 +11,40 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
 }).addTo(map);
 
-// -------------------- CURRENT LOCATION --------------------
-if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            setLocation(pos.coords.latitude, pos.coords.longitude);
-        },
-        () => {
-            console.warn("Location permission denied. Select manually.");
+// -------------------- LOAD SAVED DATA --------------------
+async function loadProfile() {
+    try {
+        const profile = await apiRequest("/shop-owner/profile/");
+        if (!profile || !profile.shop_name) {
+            // New profile - try geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => setLocation(pos.coords.latitude, pos.coords.longitude),
+                    () => console.warn("Location denied")
+                );
+            }
+            return;
         }
-    );
+
+        // Fill Form
+        document.getElementById("shop_name").value = profile.shop_name || "";
+        document.getElementById("category").value = profile.category || "";
+        document.getElementById("phone").value = profile.phone || "";
+        document.getElementById("address").value = profile.address || "";
+        document.getElementById("city").value = profile.city || "";
+        document.getElementById("pincode").value = profile.pincode || "";
+
+        // Fill Map
+        if (profile.location && profile.location.lat) {
+            setLocation(profile.location.lat, profile.location.lng);
+        }
+
+    } catch (err) {
+        console.error("Failed to load profile", err);
+    }
 }
+
+loadProfile();
 
 // -------------------- MAP CLICK --------------------
 map.on("click", (e) => {
@@ -71,39 +94,55 @@ async function reverseGeocode(lat, lng) {
 }
 
 // -------------------- SAVE PROFILE --------------------
+// -------------------- SAVE PROFILE --------------------
 window.saveProfile = async function () {
     const msg = document.getElementById("profileMsg");
-
-    const payload = {
-        shop_name: shop_name.value.trim(),
-        category: category.value.trim(),
-        phone: phone.value.trim(),
-        address: address.value.trim(),
-        city: city.value.trim(),
-        pincode: pincode.value.trim(),
-        location: selectedLocation
-    };
-
-    if (!selectedLocation) {
-        msg.textContent = "Please choose shop location on the map";
-        return;
-    }
-
-    if (Object.values(payload).some(v => !v)) {
-        msg.textContent = "All fields must be filled";
-        return;
-    }
+    msg.textContent = "Saving...";
+    msg.style.color = "blue";
 
     try {
+        const sName = document.getElementById("shop_name").value.trim();
+        const sCat = document.getElementById("category").value.trim();
+        const sPhone = document.getElementById("phone").value.trim();
+        const sAddr = document.getElementById("address").value.trim();
+        const sCity = document.getElementById("city").value.trim();
+        const sZip = document.getElementById("pincode").value.trim();
+
+        if (!sName || !sCat || !sPhone || !sAddr || !sCity || !sZip) {
+            msg.textContent = "All fields are required (Name, Category, Phone, Address, City, Pincode)";
+            msg.style.color = "red";
+            return;
+        }
+
+        if (!selectedLocation) {
+            msg.textContent = "Please set the location on the map";
+            msg.style.color = "red";
+            return;
+        }
+
+        const payload = {
+            shop_name: sName,
+            category: sCat,
+            phone: sPhone,
+            address: sAddr,
+            city: sCity,
+            pincode: sZip,
+            location: selectedLocation
+        };
+
+        console.log("Saving profile payload:", payload);
+
         await apiRequest("/shop-owner/profile/", "POST", payload);
+
         msg.style.color = "green";
-        msg.textContent = "Shop profile saved successfully";
+        msg.textContent = "Shop profile saved successfully! Redirecting...";
 
         setTimeout(() => {
             window.location.href = "orders.html";
-        }, 800);
+        }, 1500);
 
     } catch (err) {
+        console.error(err);
         msg.style.color = "red";
         msg.textContent = err.message || "Failed to save profile";
     }

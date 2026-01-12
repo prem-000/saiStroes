@@ -1,69 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Status</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="../css/user.css">
+    <link rel="stylesheet" href="../css/tracking.css">
 
     <style>
-        .icon {
-            font-size: 60px;
-            text-align: center;
-            margin-top: 10px;
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            display: block;
+            /* Override flex center */
+            height: auto;
         }
-        #orderStatusHeading {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 22px;
-            font-weight: bold;
+
+        .page-container {
+            max-width: 800px;
+            margin: 0 auto;
         }
-        #orderSubText {
+
+        .success-header {
             text-align: center;
-            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .success-icon {
+            font-size: 50px;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .success-sub {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .summary-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
-            font-size: 15px;
+        }
+
+        /* Order Items Table override */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .items-table th {
+            text-align: left;
+            color: #6b7280;
+            font-size: 13px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .items-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+        }
+
+        .items-table img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="success-container">
+    <div class="page-container">
 
-        <!-- STATUS ICON + HEADING + SUB TEXT -->
-        <div id="statusIcon" class="icon"></div>
-        <h1 id="orderStatusHeading"></h1>
-        <p id="orderSubText"></p>
-
-        <!-- ORDER SUMMARY -->
-        <div id="orderInfo" class="order-info">
-            Loading order details...
+        <div class="success-header">
+            <div id="statusIcon" class="success-icon"><i class="fa-solid fa-check-circle"></i></div>
+            <h1 id="orderStatusHeading" class="success-title">Order Info</h1>
+            <p id="orderSubText" class="success-sub">Loading details...</p>
         </div>
 
-        <!-- ADDRESS SECTION -->
-        <h3>Delivery Address</h3>
-        <div id="addressBox" class="address-box"></div>
+        <!-- TRACKING TIMELINE -->
+        <div class="tracking-wrapper">
+            <div class="tracking-title">Track Order</div>
+            <div id="trackingTimeline" class="timeline">
+                <!-- JS Populated -->
+            </div>
+        </div>
 
-        <!-- ITEMS TABLE -->
-        <h3>Items</h3>
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody id="itemsBody"></tbody>
-        </table>
+        <!-- ORDER DETAILS -->
+        <div class="summary-card">
+            <div id="orderInfo" class="order-info-grid">
+                <!-- JS Populated -->
+            </div>
 
-        <a href="orders.html" class="btn">View My Orders</a>
-        <a href="products.html" class="btn-secondary">Continue Shopping</a>
+            <h3 style="margin-top:20px; font-size:16px;">Delivery Address</h3>
+            <div id="addressBox" style="color:#4b5563; font-size:14px; line-height:1.6;"></div>
+        </div>
+
+        <!-- ITEMS -->
+        <div class="summary-card">
+            <h3 style="margin-top:0; font-size:16px;">Items</h3>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th width="60">Qty</th>
+                        <th width="80">Price</th>
+                        <th width="80">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+            </table>
+
+            <!-- Totals -->
+            <div style="margin-top:20px; text-align:right;">
+                <p>Subtotal: <span id="summSub"></span></p>
+                <p>Delivery: <span id="summDel"></span></p>
+                <p style="font-size:18px; font-weight:700; margin-top:10px;">Total: <span id="summTotal"></span></p>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="orders.html" class="btn btn-primary" style="text-decoration:none; color:white;">My Orders</a>
+            <a href="products.html" class="btn btn-ghost" style="text-decoration:none;">Back to Home</a>
+        </div>
+
     </div>
 
     <script type="module" src="../js/user/order-success.js"></script>
 
 </body>
+
 </html>

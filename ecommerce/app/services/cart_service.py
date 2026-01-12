@@ -78,6 +78,20 @@ async def get_cart(user_id: str):
 
 
 # -----------------------
+# UPDATE QUANTITY
+# -----------------------
+async def update_cart_item_quantity(user_id: str, product_id: str, quantity: int):
+    if quantity <= 0:
+        return await remove_from_cart(user_id, product_id)
+
+    result = await cart_collection.update_one(
+        {"user_id": user_id, "product_id": product_id},
+        {"$set": {"quantity": quantity}}
+    )
+    return result.modified_count > 0
+
+
+# -----------------------
 # REMOVE ITEM
 # -----------------------
 async def remove_from_cart(user_id: str, product_id: str):

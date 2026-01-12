@@ -17,6 +17,27 @@ const updateBtn = document.querySelector(".btn-primary");
 const msgBox = document.createElement("p");
 updateBtn.after(msgBox);
 
+// ---------------------------------------------
+// TIMELINE STAGES
+// ---------------------------------------------
+const STAGES = ["pending", "accepted", "packed", "shipped", "delivered"];
+const LABELS = {
+    "pending": "Order Placed",
+    "accepted": "Order Accepted",
+    "packed": "Packed",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled"
+};
+const DESCRIPTIONS = {
+    "pending": "Customer placed order.",
+    "accepted": "You accepted the order.",
+    "packed": "Item packed.",
+    "shipped": "On the way.",
+    "delivered": "Delivered to customer.",
+    "cancelled": "Order was cancelled."
+};
+
 // ----------------------------------------------
 // MAP VARS
 // ----------------------------------------------
@@ -82,6 +103,50 @@ function showRoute(shopLoc, userLoc) {
 }
 
 // ----------------------------------------------
+// RENDER TIMELINE
+// ----------------------------------------------
+function renderTimeline(status) {
+    const timelineBox = document.getElementById("trackingTimeline");
+    if (!timelineBox) return;
+
+    if (status === "cancelled") {
+        timelineBox.innerHTML = `
+            <div class="timeline-item active">
+                <div class="timeline-node" style="background:red; border-color:red"></div>
+                <div class="timeline-status" style="color:red">Cancelled</div>
+                <div class="timeline-desc">This order has been cancelled.</div>
+            </div>
+        `;
+        return;
+    }
+
+    let html = "";
+    STAGES.forEach((stage) => {
+        let stateClass = "";
+        const idxCurrent = STAGES.indexOf(status);
+        const idxStage = STAGES.indexOf(stage);
+
+        if (idxStage < idxCurrent) {
+            stateClass = "completed";
+        } else if (idxStage === idxCurrent) {
+            stateClass = "active";
+        }
+
+        html += `
+            <div class="timeline-item ${stateClass}">
+                <div class="timeline-node"></div>
+                <div class="timeline-date">
+                     ${stateClass ? 'Completed' : 'Upcoming'}
+                </div>
+                <div class="timeline-status">${LABELS[stage]}</div>
+                <div class="timeline-desc">${DESCRIPTIONS[stage]}</div>
+            </div>
+        `;
+    });
+    timelineBox.innerHTML = html;
+}
+
+// ----------------------------------------------
 // LOAD ORDER
 // ----------------------------------------------
 async function loadOrder() {
@@ -92,6 +157,9 @@ async function loadOrder() {
         document.getElementById("orderDate").textContent =
             new Date(o.created_at).toLocaleString();
         document.getElementById("orderStatus").textContent = o.status;
+
+        // RENDER TIMELINE
+        renderTimeline(o.status.toLowerCase());
 
         // PAYMENT
         const pay = o.payment || {};

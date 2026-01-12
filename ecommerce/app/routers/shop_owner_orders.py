@@ -11,8 +11,10 @@ from app.database import get_collection
 
 notifications_collection = get_collection("user_notifications")
 
-router = APIRouter(prefix="/shop-owner/orders", tags=["Shop Owner Orders"])
-
+router = APIRouter(
+    prefix="/shop-owner/orders",
+    tags=["Shop Owner Orders"]
+)
 
 # -----------------------------------------------------------
 # STATUS FLOW
@@ -29,7 +31,7 @@ def get_next_statuses(current: str):
 
 
 # -----------------------------------------------------------
-# GET ALL ORDERS
+# GET ALL ORDERS (OWNER VIEW)
 # -----------------------------------------------------------
 @router.get("/")
 async def get_my_orders(owner=Depends(owner_auth)):
@@ -38,8 +40,15 @@ async def get_my_orders(owner=Depends(owner_auth)):
 
     orders = []
 
-    async for o in orders_collection.find({"shop_owner_ids": owner_id}).sort("created_at", -1):
-        owner_items = [i for i in o.get("items", []) if str(i["owner_id"]) == owner_id]
+    async for o in orders_collection.find(
+        {"shop_owner_ids": owner_id}
+    ).sort("created_at", -1):
+
+        owner_items = [
+            i for i in o.get("items", [])
+            if str(i.get("owner_id")) == owner_id
+        ]
+
         if not owner_items:
             continue
 
@@ -50,34 +59,43 @@ async def get_my_orders(owner=Depends(owner_auth)):
             "status": o["status"],
             "next_statuses": get_next_statuses(o["status"]),
 
-            # 💳 PAYMENT INFO (IMPORTANT)
+            # PAYMENT INFO
             "payment_method": o.get("payment_method", "cod"),
             "payment_status": o.get("payment_status", "pending"),
             "paid_amount": o.get("paid_amount", 0.0),
 
             "items": owner_items,
-            "user": o.get("user_profile", {"name": "Unknown", "phone": "Unknown"})
+            "user": o.get("user_profile", {}),
+
+            # ✅ LOCATION SNAPSHOTS (FOR MAP + DISTANCE)
+            "shop_location": o.get("shop_location"),
+            "user_location": o.get("user_location")
         })
 
     return orders
 
 
 # -----------------------------------------------------------
-# GET SINGLE ORDER
+# GET SINGLE ORDER (OWNER VIEW)
 # -----------------------------------------------------------
 @router.get("/{order_id}")
 async def get_order(order_id: str, owner=Depends(owner_auth)):
     owner_id = str(owner["_id"])
     await ensure_shop_profile_completed(owner_id)
 
-    o = await orders_collection.find_one({"_id": ObjectId(order_id)})
+    o = await orders_collection.find_one(
+        {"_id": ObjectId(order_id)}
+    )
     if not o:
         raise HTTPException(404, "Order not found")
 
     if owner_id not in o.get("shop_owner_ids", []):
         raise HTTPException(403, "Not your order")
 
-    owner_items = [i for i in o["items"] if str(i["owner_id"]) == owner_id]
+    owner_items = [
+        i for i in o.get("items", [])
+        if str(i.get("owner_id")) == owner_id
+    ]
 
     return {
         "id": str(o["_id"]),
@@ -93,7 +111,11 @@ async def get_order(order_id: str, owner=Depends(owner_auth)):
         },
 
         "items": owner_items,
-        "user": o.get("user_profile", {"name": "Unknown", "phone": "Unknown"})
+        "user": o.get("user_profile", {}),
+
+        # ✅ REQUIRED FOR MAP + DISTANCE
+        "shop_location": o.get("shop_location"),
+        "user_location": o.get("user_location")
     }
 
 
@@ -108,13 +130,19 @@ class StatusUpdate(BaseModel):
 # UPDATE ORDER STATUS
 # -----------------------------------------------------------
 @router.put("/{order_id}/status")
-async def update_order_status(order_id: str, payload: StatusUpdate, owner=Depends(owner_auth)):
+async def update_order_status(
+    order_id: str,
+    payload: StatusUpdate,
+    owner=Depends(owner_auth)
+):
     owner_id = str(owner["_id"])
     await ensure_shop_profile_completed(owner_id)
 
     new_status = payload.status
 
-    o = await orders_collection.find_one({"_id": ObjectId(order_id)})
+    o = await orders_collection.find_one(
+        {"_id": ObjectId(order_id)}
+    )
     if not o:
         raise HTTPException(404, "Order not found")
 
@@ -127,40 +155,59 @@ async def update_order_status(order_id: str, payload: StatusUpdate, owner=Depend
         raise HTTPException(400, "Order already in this status")
 
     if new_status not in get_next_statuses(old_status):
-        raise HTTPException(400, f"Invalid status change: {old_status} → {new_status}")
+        raise HTTPException(
+            400,
+            f"Invalid status change: {old_status} → {new_status}"
+        )
 
-    owner_items = [i for i in o["items"] if str(i["owner_id"]) == owner_id]
+    owner_items = [
+        i for i in o.get("items", [])
+        if str(i.get("owner_id")) == owner_id
+    ]
+
     stock_reduced = o.get("stock_reduced", False)
 
-    # Reduce stock on accept
+    # -------------------------------------------------------
+    # REDUCE STOCK ON ACCEPT
+    # -------------------------------------------------------
     if old_status == "pending" and new_status == "accepted" and not stock_reduced:
         for item in owner_items:
             await products_collection.update_one(
                 {"_id": ObjectId(item["product_id"])},
                 {"$inc": {"stock": -item["quantity"]}}
             )
+
         await orders_collection.update_one(
             {"_id": ObjectId(order_id)},
             {"$set": {"stock_reduced": True}}
         )
 
-    # Restore stock on cancel
+    # -------------------------------------------------------
+    # RESTORE STOCK ON CANCEL
+    # -------------------------------------------------------
     if new_status == "cancelled" and stock_reduced:
         for item in owner_items:
             await products_collection.update_one(
                 {"_id": ObjectId(item["product_id"])},
                 {"$inc": {"stock": item["quantity"]}}
             )
+
         await orders_collection.update_one(
             {"_id": ObjectId(order_id)},
             {"$set": {"stock_reduced": False}}
         )
 
+    # -------------------------------------------------------
+    # UPDATE STATUS
+    # -------------------------------------------------------
     await orders_collection.update_one(
         {"_id": ObjectId(order_id)},
         {"$set": {"status": new_status}}
     )
 
+    # -------------------------------------------------------
+    # USER NOTIFICATION ON CANCEL
+    # -------------------------------------------------------
     if new_status == "cancelled":
         await notifications_collection.insert_one({
             "user_id": o["user_id"],

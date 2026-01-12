@@ -67,9 +67,16 @@ function renderCart(data) {
         <div class="cart-item">
             <img src="${item.image}" class="product-thumb">
             <div class="item-info">
-                <div>${item.title}</div>
-                <div>₹${item.price}</div>
-                <button onclick="removeItem('${item.product_id}')">Remove</button>
+                <div style="font-weight:600">${item.title}</div>
+                <div>${INR(item.price)}</div>
+                
+                <div class="qty-ctrl" style="margin-top:8px; width:fit-content">
+                   <button class="qty-btn" onclick="changeQuantity('${item.product_id}', ${item.quantity - 1})">−</button>
+                   <span class="qty-num">${item.quantity}</span>
+                   <button class="qty-btn" onclick="changeQuantity('${item.product_id}', ${item.quantity + 1})">+</button>
+                </div>
+
+                <button class="btn-ghost" onclick="removeItem('${item.product_id}')" style="margin-top:8px; padding:4px 8px; font-size:12px; border-radius:6px">Remove</button>
             </div>
         </div>
     `
@@ -78,10 +85,13 @@ function renderCart(data) {
 
     subtotalEl.textContent = INR(data.cart_total);
 
-    const delivery = data.cart_total > 999 ? 0 : 49;
-    deliveryEl.textContent = INR(delivery);
+    // Delivery is dynamic base on distance (calculated at checkout)
+    deliveryEl.textContent = "Calculated at checkout";
+    deliveryEl.style.fontSize = "12px";
+    deliveryEl.style.color = "#666";
 
-    totalEl.textContent = INR(data.cart_total + delivery);
+    // Just show subtotal as total for now, or keep total same as subtotal
+    totalEl.textContent = INR(data.cart_total);
 }
 
 /* --------------------------------------------------
@@ -126,3 +136,15 @@ if (checkoutBtn) {
         window.location.href = "checkout.html";
     });
 }
+
+/* --------------------------------------------------
+   CHANGE QUANTITY
+---------------------------------------------------- */
+window.changeQuantity = async function (id, qty) {
+    try {
+        await apiRequest(`/cart/update-quantity?product_id=${id}&quantity=${qty}`, "PUT");
+        await loadCart();
+    } catch (err) {
+        console.error("Change quantity failed:", err);
+    }
+};

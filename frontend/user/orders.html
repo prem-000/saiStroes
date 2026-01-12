@@ -1,21 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders | Dokani Style</title>
 
-    <title>My Orders</title>
-    <link rel="stylesheet" href="../css/user.css">
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --surface: #ffffff;
+            --bg: #f3f4f6;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* HEADER */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .page-title p {
+            margin: 4px 0 0;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            gap: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 0;
+            color: var(--text-light);
+            cursor: pointer;
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            color: var(--primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        /* SEARCH & FILTER */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            color: var(--text);
+        }
+
+        /* ORDERS LIST (Cards acting as rows) */
+        .order-row {
+            background: var(--surface);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .order-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #f9fafb;
+        }
+
+        .order-details h3 {
+            margin: 0 0 4px;
+            font-size: 16px;
+        }
+
+        .order-meta {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .price {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .status-pending {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .status-shipped {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .status-delivered {
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        .status-cancelled {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .order-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 140px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+        }
+
+        @media (max-width: 768px) {
+            .order-row {
+                grid-template-columns: 60px 1fr;
+            }
+
+            .order-actions {
+                grid-column: 1 / -1;
+                flex-direction: row;
+            }
+
+            .tabs {
+                gap: 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <header class="title">My Orders</header>
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1>All Orders</h1>
+                <p>Check all orders at single place. Easy to manage.</p>
+            </div>
+            <button class="btn btn-outline"><i class="fa-solid fa-file-export"></i> Export Orders</button>
+        </div>
 
-    <div id="ordersList" class="orders-list">
-        Loading orders...
+        <!-- TABS -->
+        <div class="tabs">
+            <div class="tab active" onclick="filterOrders('all', this)">All orders (<span id="count-all">0</span>)</div>
+            <div class="tab" onclick="filterOrders('pending', this)">Processing (<span id="count-pending">0</span>)
+            </div>
+            <div class="tab" onclick="filterOrders('shipped', this)">Shipped (<span id="count-shipped">0</span>)</div>
+            <div class="tab" onclick="filterOrders('cancelled', this)">Cancelled (<span id="count-cancelled">0</span>)
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="controls">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af"></i>
+                <input type="text" id="searchInput" placeholder="Search by ID, name, status..."
+                    onkeyup="searchOrders()">
+            </div>
+            <!-- <div class="btn btn-outline">Filter <i class="fa-solid fa-filter"></i></div> -->
+        </div>
+
+        <!-- ORDERS LIST CONTAINER -->
+        <div id="ordersContainer">
+            <!-- JS will populate rows here -->
+            <p style="text-align:center; color:#6b7280; margin-top:40px;">Loading orders...</p>
+        </div>
+
     </div>
 
     <script type="module" src="../js/user/orders.js"></script>
+
 </body>
+
 </html>
