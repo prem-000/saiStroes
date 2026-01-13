@@ -131,13 +131,15 @@ async def buy_now(product_id: str, user=Depends(get_current_user)):
         }],
         "cart_total": cart_total,
         "delivery": delivery,
+        "delivery_fee": delivery, # Backward compatibility
         "total": total,
+        "payment_method": "cod", # Default for buy now
+        "payment_status": "pending",
+        "paid_amount": 0,
         "status": "pending",
         "order_number": f"ORD{datetime.utcnow().strftime('%Y%m%d%H%M%S')}{random.randint(1000,9999)}",
         "created_at": datetime.utcnow(),
-        "created_at": datetime.utcnow(),
         "shop_owner_ids": [product["owner_id"]],
-        "delivery_fee": delivery, # Save breakdown
         "delivery_distance_km": distance,
         "razorpay_order_id": None,
         "user_profile": profile
@@ -148,8 +150,11 @@ async def buy_now(product_id: str, user=Depends(get_current_user)):
     return {
         "order_id": str(result.inserted_id),
         "order_number": order_doc["order_number"],
+        "cart_total": cart_total,
+        "delivery": delivery,
         "total": total,
-        "status": "pending"
+        "status": "pending",
+        "user_profile": profile
     }
 
 
@@ -166,6 +171,37 @@ async def delete_order(order_id: str, user=Depends(get_current_user)):
 
     await orders_collection.delete_one({"_id": ObjectId(order_id)})
     return {"message": "Order deleted"}
+
+
+# ---------------------------------------------
+# CANCEL ORDER (USER)
+# ---------------------------------------------
+@router.put("/{order_id}/cancel")
+async def cancel_order(order_id: str, user=Depends(get_current_user)):
+    user_id = str(user["_id"])
+
+    order = await orders_collection.find_one({"_id": ObjectId(order_id), "user_id": user_id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if order["status"] not in ["pending", "accepted", "packed"]:
+        raise HTTPException(status_code=400, detail=f"Cannot cancel order with status: {order['status']}")
+
+    # Restore Stock if it was already reduced (accepted/packed)
+    if order.get("stock_reduced"):
+        for item in order["items"]:
+            from app.models.products import products_collection
+            await products_collection.update_one(
+                {"_id": ObjectId(item["product_id"])},
+                {"$inc": {"stock": item["quantity"]}}
+            )
+
+    await orders_collection.update_one(
+        {"_id": ObjectId(order_id)},
+        {"$set": {"status": "cancelled", "stock_reduced": False}}
+    )
+
+    return {"message": "Order cancelled successfully"}
 
 
 # ---------------------------------------------

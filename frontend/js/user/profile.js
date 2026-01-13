@@ -10,7 +10,10 @@ const pincodeEl = document.getElementById("p_pincode");
 const cityEl = document.getElementById("p_city");
 const stateEl = document.getElementById("p_state");
 const saveBtn = document.getElementById("saveBtn");
-const infoBox = document.getElementById("infoSection");
+const nameDisplay = document.getElementById("p_name_display");
+const emailEl = document.getElementById("p_email");
+const personalSection = document.getElementById("personalSection");
+const faqSection = document.getElementById("faqSection");
 
 /* ----------------------------------------------------
    MAP STATE
@@ -84,6 +87,7 @@ function initMap(lat = 12.9716, lng = 77.5946) {
 /* ----------------------------------------------------
    LOAD PROFILE
 ---------------------------------------------------- */
+
 async function loadProfile() {
   try {
     const profile = await apiRequest("/profile/me");
@@ -93,12 +97,23 @@ async function loadProfile() {
       return;
     }
 
+    console.log("Profile data loaded:", profile);
+
     nameEl.value = profile.name ?? "";
+    nameDisplay.textContent = profile.name || "User Name";
     phoneEl.value = profile.phone ?? "";
+    emailEl.value = profile.email ?? "No email found";
     addressEl.value = profile.address ?? "";
     pincodeEl.value = profile.pincode ?? "";
     cityEl.value = profile.city ?? "";
     stateEl.value = profile.state ?? "";
+
+    // Gender
+    if (profile.gender) {
+      console.log("Setting gender to:", profile.gender);
+      const genderRadio = document.querySelector(`input[name="gender"][value="${profile.gender.toLowerCase()}"]`);
+      if (genderRadio) genderRadio.checked = true;
+    }
 
     if (profile.lat && profile.lng) {
       initMap(profile.lat, profile.lng);
@@ -111,14 +126,13 @@ async function loadProfile() {
   }
 }
 
-/* ----------------------------------------------------
-   SAVE PROFILE
----------------------------------------------------- */
 async function saveProfile() {
   if (!selectedLat || !selectedLng) {
     alert("Please pin your delivery location on the map.");
     return;
   }
+
+  const genderEl = document.querySelector('input[name="gender"]:checked');
 
   const payload = {
     name: nameEl.value.trim(),
@@ -127,6 +141,7 @@ async function saveProfile() {
     pincode: pincodeEl.value.trim(),
     city: cityEl.value.trim(),
     state: stateEl.value.trim(),
+    gender: genderEl ? genderEl.value : null,
     lat: selectedLat,
     lng: selectedLng,
   };
@@ -140,49 +155,48 @@ async function saveProfile() {
 
   try {
     await apiRequest("/profile/update", "POST", payload);
-    saveBtn.classList.add("success");
-    setTimeout(() => saveBtn.classList.remove("success"), 1200);
+    nameDisplay.textContent = payload.name;
+    alert("Profile updated successfully!");
   } catch (err) {
     console.error("Profile update failed:", err);
-    alert("Failed to save profile. Try again.");
+    alert("Failed to save profile.");
   } finally {
     saveBtn.classList.remove("loading");
   }
 }
 
+window.toggleEditMode = () => {
+  nameEl.focus();
+};
+
+window.toggleFAQ = function () {
+  const isHidden = faqSection.style.display === "none";
+  faqSection.style.display = isHidden ? "block" : "none";
+  personalSection.style.display = isHidden ? "none" : "block";
+
+  // Update sidebar active state
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  if (isHidden) {
+    const paymentNavItem = Array.from(document.querySelectorAll('.nav-item')).find(el => el.textContent.includes('Payment'));
+    if (paymentNavItem) paymentNavItem.classList.add('active');
+  } else {
+    const accountNavItem = document.querySelector('[data-section="personal"]');
+    if (accountNavItem) accountNavItem.classList.add('active');
+  }
+};
+
+// FAQ Accordion Logic
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("faq-question")) {
+    const item = e.target.parentElement;
+    item.classList.toggle("active");
+  }
+});
+
 /* ----------------------------------------------------
    UI ACTIONS
 ---------------------------------------------------- */
-window.toggleFAQ = function () {
-  const faq = document.getElementById("faqSection");
-  faq.style.display = faq.style.display === "none" ? "block" : "none";
-  infoBox.style.display = "none";
-};
-
-document.addEventListener("click", (e) => {
-  if (!e.target.classList.contains("faq-question")) return;
-  const ans = e.target.nextElementSibling;
-  ans.style.display = ans.style.display === "block" ? "none" : "block";
-});
-
-window.showAbout = function () {
-  infoBox.style.display = "block";
-  infoBox.innerHTML = `
-    <h4>About Sai Stores</h4>
-    <p>Sai Stores provides quality products with fast local delivery.</p>
-    <p>Payments are securely processed using Razorpay.</p>
-  `;
-  document.getElementById("faqSection").style.display = "none";
-};
-
-window.showFeedback = function () {
-  infoBox.style.display = "block";
-  infoBox.innerHTML = `
-    <h4>Feedback</h4>
-    <p>Email us at <b>support@sai-stores.com</b></p>
-  `;
-  document.getElementById("faqSection").style.display = "none";
-};
+// Note: infoSection removed in new layout
 
 window.goToCart = () => (window.location.href = "cart.html");
 
@@ -194,29 +208,33 @@ window.logout = () => {
 /* ----------------------------------------------------
    THEME TOGGLE
 ---------------------------------------------------- */
-const toggle = document.getElementById("themeToggle");
+const themeToggleBtn = document.getElementById("themeToggle");
 const root = document.documentElement;
 
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme) root.setAttribute("data-theme", savedTheme);
 
 function updateIcon() {
-  toggle.textContent =
+  if (!themeToggleBtn) return;
+  themeToggleBtn.textContent =
     root.getAttribute("data-theme") === "dark" ? "☀️" : "🌙";
 }
 
-updateIcon();
-
-toggle.onclick = () => {
-  const next =
-    root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-  root.setAttribute("data-theme", next);
-  localStorage.setItem("theme", next);
+if (themeToggleBtn) {
   updateIcon();
-};
+  themeToggleBtn.onclick = () => {
+    const next =
+      root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+    updateIcon();
+  };
+}
 
 /* ----------------------------------------------------
    INIT
 ---------------------------------------------------- */
-saveBtn.addEventListener("click", saveProfile);
-loadProfile();
+document.addEventListener("DOMContentLoaded", () => {
+  if (saveBtn) saveBtn.addEventListener("click", saveProfile);
+  loadProfile();
+});

@@ -1,154 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, user-scalable=no"
-  />
-
-  <title>User Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+  <link rel="icon" href="data:,">
+  <title>User Profile | Premium</title>
 
   <!-- YOUR CSS -->
   <link rel="stylesheet" href="../css/profile.css" />
 
   <!-- FONT AWESOME -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <!-- LEAFLET CSS (REQUIRED) -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
   <div class="header">
-    <h2>User Profile</h2>
-  </div>
-
-  <div class="container">
-    <!-- THEME TOGGLE -->
-    <button id="themeToggle" class="theme-btn">🌙</button>
-
-    <!-- PROFILE CARD -->
-    <div class="section-card">
-      <h3>Personal Details</h3>
-
-      <label>Full Name</label>
-      <input id="p_name" placeholder="Enter name" />
-
-      <label>Phone Number</label>
-      <input id="p_phone" placeholder="Enter phone number" />
-
-      <label>Address</label>
-      <textarea
-        id="p_address"
-        placeholder="Enter full delivery address"
-      ></textarea>
-
-      <div class="grid-3">
-        <div>
-          <label>Pincode</label>
-          <input id="p_pincode" placeholder="Pincode" />
-        </div>
-
-        <div>
-          <label>City</label>
-          <input id="p_city" placeholder="City" />
-        </div>
-
-        <div>
-          <label>State</label>
-          <input id="p_state" placeholder="State" />
-        </div>
-      </div>
-
-      <!-- MAP -->
-      <label style="margin-top: 12px;">Pin Your Delivery Location</label>
-      <div
-        id="map"
-        style="height: 260px; border-radius: 12px; margin-bottom: 8px;"
-      ></div>
-      <p class="muted">Tap or drag the pin to your exact location</p>
-
-      <!-- SAVE BUTTON -->
-      <button id="saveBtn" class="btn-primary">
-        <span class="btn-text">Save Profile</span>
-        <span class="btn-spinner"></span>
+    <div class="header-content">
+      <button class="back-btn" onclick="window.location.href='index.html'">
+        <i class="fas fa-chevron-left"></i>
       </button>
-    </div>
-
-    <!-- SETTINGS CARD -->
-    <div class="section-card">
-      <h3>Settings</h3>
-
-      <button class="btn-option" onclick="goToCart()">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span>Go to Cart</span>
-      </button>
-
-      <button class="btn-option" onclick="toggleFAQ()">
-        <i class="fa-solid fa-credit-card"></i>
-        <span>Payment Information</span>
-      </button>
-
-      <!-- FAQ -->
-      <div id="faqSection" class="faq-section" style="display: none;">
-        <div class="faq-item">
-          <button class="faq-question">How do payments work?</button>
-          <div class="faq-answer">
-            We create a secure Razorpay order.<br />
-            Pay via UPI, Card, Netbanking, or Wallet.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">Is my payment secure?</button>
-          <div class="faq-answer">
-            Yes. Razorpay uses PCI-DSS Level 1 security.
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">When will I get a refund?</button>
-          <div class="faq-answer">
-            Refunds are processed within 3–5 working days.
-          </div>
-        </div>
-      </div>
-
-      <!-- ABOUT -->
-      <button class="btn-option" onclick="showAbout()">
-        <i class="fa-solid fa-circle-info"></i>
-        <span>About Us</span>
-      </button>
-
-      <!-- FEEDBACK -->
-      <button class="btn-option" onclick="showFeedback()">
-        <i class="fa-solid fa-envelope"></i>
-        <span>Feedback</span>
-      </button>
-
-      <!-- INLINE INFO -->
-      <div
-        id="infoSection"
-        class="info-section"
-        style="display: none;"
-      ></div>
-
-      <!-- LOGOUT -->
-      <button class="btn-danger" onclick="logout()">Logout</button>
+      <h2>My Profile</h2>
+      <button id="themeToggle" class="theme-toggle">🌙</button>
     </div>
   </div>
 
-  <!-- LEAFLET JS (REQUIRED) -->
+  <div class="profile-layout">
+    <!-- SIDEBAR (DEFAULTS TO HIDDEN ON MOBILE) -->
+    <aside class="profile-sidebar">
+      <div class="user-brief">
+        <div class="avatar-wrapper">
+          <img src="../img/default-avatar.png" id="p_avatar_preview" class="user-avatar" alt="User">
+          <label for="p_avatar_input" class="edit-avatar-btn">
+            <i class="fas fa-camera"></i>
+          </label>
+          <input type="file" id="p_avatar_input" hidden accept="image/*">
+        </div>
+        <div class="user-name-info">
+          <p class="greeting">Hello,</p>
+          <h4 id="p_name_display">User Name</h4>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="personal">
+          <i class="fas fa-user-circle"></i>
+          <span>My Account</span>
+        </a>
+        <a href="orders.html" class="nav-item">
+          <i class="fas fa-box"></i>
+          <span>My Orders</span>
+        </a>
+        <a href="wishlist.html" class="nav-item">
+          <i class="fas fa-heart"></i>
+          <span>My Wishlist</span>
+        </a>
+        <a href="#" class="nav-item" onclick="toggleFAQ()">
+          <i class="fas fa-credit-card"></i>
+          <span>Payment</span>
+        </a>
+        <a href="notifications.html" class="nav-item">
+          <i class="fas fa-bell"></i>
+          <span>Notifications</span>
+        </a>
+        <button class="nav-item logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="profile-content">
+      <div id="personalSection" class="content-section">
+        <div class="section-header">
+          <h2>Personal Details</h2>
+          <button class="edit-profile-trigger" onclick="toggleEditMode()">
+            <i class="fas fa-edit"></i>
+          </button>
+        </div>
+
+        <div class="profile-details-grid">
+          <div class="field-group">
+            <label>Full Name</label>
+            <input id="p_name" type="text" placeholder="Enter name">
+          </div>
+
+          <div class="field-group">
+            <label>Email Address</label>
+            <input id="p_email" type="email" placeholder="Enter email" readonly>
+          </div>
+
+          <div class="field-group">
+            <label>Phone Number</label>
+            <input id="p_phone" type="tel" placeholder="Enter phone number">
+          </div>
+
+          <div class="field-group">
+            <label>Gender</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="gender" value="male"> Male
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="gender" value="female"> Female
+              </label>
+            </div>
+          </div>
+
+          <div class="field-group full-width">
+            <label>Address</label>
+            <textarea id="p_address" placeholder="Enter full delivery address"></textarea>
+          </div>
+
+          <div class="field-group">
+            <label>City</label>
+            <input id="p_city" placeholder="City">
+          </div>
+
+          <div class="field-group">
+            <label>State</label>
+            <input id="p_state" placeholder="State">
+          </div>
+
+          <div class="field-group">
+            <label>Pincode</label>
+            <input id="p_pincode" placeholder="Pincode">
+          </div>
+        </div>
+
+        <!-- MAP -->
+        <div class="map-container">
+          <label>Delivery Location Pin</label>
+          <div id="map"></div>
+          <p class="map-hint"><i class="fas fa-info-circle"></i> Tap or drag the pin to your exact delivery location</p>
+        </div>
+
+        <div class="form-actions">
+          <button id="saveBtn" class="btn-primary">
+            <span class="btn-text">Save Updates</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- FAQ SECTION (Embedded) -->
+      <div id="faqSection" class="content-section" style="display: none;">
+        <h2>Payment Information</h2>
+        <div class="faq-list">
+          <!-- Slide-down items -->
+          <div class="faq-item">
+            <button class="faq-question">How do payments work?</button>
+            <div class="faq-answer">
+              We create a secure Razorpay order.<br />
+              Pay via UPI, Card, Netbanking, or Wallet.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my payment secure?</button>
+            <div class="faq-answer">
+              Yes. Razorpay uses PCI-DSS Level 1 security.
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- BOTTOM NAVIGATION (MOBILE ONLY) -->
+  <div class="bottom-nav">
+    <a href="index.html" class="b-nav-item">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </a>
+    <a href="orders.html" class="b-nav-item">
+      <i class="fas fa-shopping-bag"></i>
+      <span>Orders</span>
+    </a>
+    <a href="wishlist.html" class="b-nav-item">
+      <i class="fas fa-heart"></i>
+      <span>Wishlist</span>
+    </a>
+    <a href="profile.html" class="b-nav-item active">
+      <i class="fas fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </div>
+
+  <!-- LEAFLET JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <!-- PROFILE JS -->
   <script type="module" src="../js/user/profile.js"></script>
 </body>
+
 </html>

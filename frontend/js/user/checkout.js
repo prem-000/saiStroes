@@ -189,9 +189,9 @@ async function createOrder(payment_method) {
     });
 
     if (payment_method === "cod") {
-      window.location.href = `order-success.html?id=${order.order_id}`;
+      window.location.href = `order-success.html?order_id=${order.order_id}`;
     } else {
-      window.location.href = `pay.html?id=${order.order_id}`;
+      window.location.href = `pay.html?order_id=${order.order_id}`;
     }
 
   } catch (err) {

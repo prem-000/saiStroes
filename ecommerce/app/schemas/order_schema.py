@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class OrderItem(BaseModel):
-    cart_item_id: str
+    cart_item_id: Optional[str] = None # Optional for Buy Now orders
     product_id: str
     title: str
     image: str
@@ -26,11 +26,11 @@ class UserProfile(BaseModel):
 class OrderCreateResponse(BaseModel):
     order_id: str
     order_number: str
-    cart_total: float
-    delivery: float
+    cart_total: Optional[float] = 0.0
+    delivery: Optional[float] = 0.0
     total: float
     status: str
-    user_profile: Dict[str, Any]
+    user_profile: Optional[Dict[str, Any]] = None
 
 
 class OrderResponse(BaseModel):
@@ -41,13 +41,14 @@ class OrderResponse(BaseModel):
     items: List[OrderItem]
 
     cart_total: float
-    delivery: float
+    delivery: float = 0.0  # Default to 0
+
     total: float
 
-    # 🔥 PAYMENT FIELDS (REQUIRED)
-    payment_method: Literal["cod", "online"]
-    payment_status: Literal["pending", "paid", "failed"]
-    paid_amount: float
+    # 🔥 PAYMENT FIELDS (OPTIONAL for legacy)
+    payment_method: Optional[str] = "cod"
+    payment_status: Optional[str] = "pending"
+    paid_amount: Optional[float] = 0.0
 
     status: str
     order_number: str

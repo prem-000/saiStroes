@@ -428,8 +428,8 @@ main {
 
 /* add-to-cart button — orange with small border */
 .product-card button {
-  background: #111;
-  /* Black button like reference */
+  background: #ff8c00;
+  /* Orange accent */
   color: #fff;
   border: none;
   padding: 8px 14px;
@@ -440,13 +440,13 @@ main {
   cursor: pointer;
   font-weight: 700;
   font-size: 13px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(255, 140, 0, 0.2);
   transition: background 0.2s,
     transform 0.1s;
 }
 
 .product-card button:hover {
-  background: #333;
+  background: #e67e00;
   transform: scale(1.02);
 }
 

@@ -87,7 +87,8 @@ async def create_order(
         "items": items,
 
         "cart_total": cart_total,
-        "delivery_fee": delivery_fee,
+        "delivery": delivery_fee, # Standardized name
+        "delivery_fee": delivery_fee, # Keep for backward compatibility if needed
         "delivery_breakdown": delivery_info["breakdown"],
         "delivery_distance_km": distance_km,
         
@@ -118,11 +119,11 @@ async def create_order(
     return {
         "order_id": str(result.inserted_id),
         "order_number": order_doc["order_number"],
-        "payment_method": payment_method,
-        "delivery_fee": delivery_fee,
-        "distance_km": distance_km,
+        "cart_total": cart_total,
+        "delivery": delivery_fee,
         "total": total,
-        "status": "pending"
+        "status": "pending",
+        "user_profile": profile
     }
 
 
@@ -150,6 +151,14 @@ async def get_orders_by_user(user_id: str):
     ).sort("created_at", -1):
         o["order_id"] = str(o["_id"])
         o.pop("_id", None)
+        # Ensure 'delivery' field exists for older records
+        if "delivery" not in o and "delivery_fee" in o:
+            o["delivery"] = o["delivery_fee"]
+        
+        # Ensure 'note' is a string
+        if not isinstance(o.get("note"), str):
+            o["note"] = ""
+            
         orders.append(o)
     return orders
 
@@ -170,4 +179,12 @@ async def get_order_by_id(order_id: str, user_id: str | None = None):
 
     o["order_id"] = str(o["_id"])
     o.pop("_id", None)
+    # Ensure 'delivery' field exists for older records
+    if "delivery" not in o and "delivery_fee" in o:
+        o["delivery"] = o["delivery_fee"]
+    
+    # Ensure 'note' is a string
+    if not isinstance(o.get("note"), str):
+        o["note"] = ""
+        
     return o

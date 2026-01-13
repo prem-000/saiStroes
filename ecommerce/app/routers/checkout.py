@@ -64,15 +64,15 @@ async def checkout_summary(
     # 3. Calculate Delivery
     delivery_info = {"fee": 0.0, "breakdown": "Location needed"}
     
-    # Refetch user to get location
-    user_profile = await users_collection.find_one({"_id": user["_id"]})
+    # Refetch user to get location from user_profiles collection
+    user_profile = await profiles.find_one({"user_id": user_id})
     
-    if user_profile and user_profile.get("location") and shop_owner_id:
+    if user_profile and user_profile.get("lat") and shop_owner_id:
         shop = await shops.find_one({"owner_id": shop_owner_id})
         
         if shop and shop.get("location"):
             dist = haversine_km(
-                user_profile["location"]["lat"], user_profile["location"]["lng"],
+                user_profile["lat"], user_profile["lng"],
                 shop["location"]["lat"], shop["location"]["lng"]
             )
             delivery_info = calculate_delivery_cost(dist, subtotal)
