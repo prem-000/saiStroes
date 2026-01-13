@@ -554,3 +554,9 @@ body {
 [data-theme="dark"] .leaflet-container {
   background: #1e293b;
 }
+
+@media (max-width: 968px) {
+  .logout-btn {
+    display: none !important;
+  }
+}
