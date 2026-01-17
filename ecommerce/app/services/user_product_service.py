@@ -30,17 +30,21 @@ async def _get_recent_sales_map(days=7):
 def _calculate_tags(p, recent_sales=0, total_products=1):
     tags = []
     
-    # NEW TAG (last 7 days)
-    created_at = p.get("created_at")
-    if created_at:
+    # Standardize created_at to a datetime object
+    raw_created = p.get("created_at")
+    created_at = None
+    if raw_created:
         try:
-            if isinstance(created_at, str):
-                created_at = datetime.fromisoformat(created_at.replace('Z', ''))
-            
-            if (datetime.utcnow() - created_at).days <= 7:
-                tags.append("new")
+            if isinstance(raw_created, str):
+                created_at = datetime.fromisoformat(raw_created.replace('Z', ''))
+            elif isinstance(raw_created, datetime):
+                created_at = raw_created
         except:
             pass
+            
+    # NEW TAG (last 7 days)
+    if created_at and (datetime.utcnow() - created_at).days <= 7:
+        tags.append("new")
             
     # TRENDING TAG
     # If recent sales are significant (arbitrary threshold or relative to avg)
@@ -49,8 +53,12 @@ def _calculate_tags(p, recent_sales=0, total_products=1):
 
     # BEST SELLER TAG
     # Refined: Need both lifetime sales and some recent activity to stay "Best Seller"
-    sold = p.get("sold_count", 0)
-    if sold > 20 and (recent_sales > 0 or (datetime.utcnow() - p.get("created_at", datetime.utcnow())).days < 30):
+    try:
+        sold = int(p.get("sold_count", 0))
+    except (ValueError, TypeError):
+        sold = 0
+    days_since = (datetime.utcnow() - created_at).days if created_at else 999
+    if sold > 20 and (recent_sales > 0 or days_since < 30):
         tags.append("best_seller")
         
     return tags
@@ -63,7 +71,11 @@ def _calculate_best_seller_score(p, avg_rating, review_trust, recent_sales=0):
     velocity = recent_sales / 7.0
     
     # 2. Revenue (based on price)
-    revenue = p.get("price", 0) * recent_sales
+    try:
+        price = float(p.get("price", 0))
+    except (ValueError, TypeError):
+        price = 0
+    revenue = price * recent_sales
     
     # 3. Lifetime sales proxy
     lifetime = p.get("sold_count", 0)
@@ -110,7 +122,9 @@ async def get_all_user_products():
     # Group reviews by product
     reviews_map = {}
     for r in all_reviews:
-        pid = r["product_id"]
+        pid = r.get("product_id")
+        if not pid:
+            continue
         if pid not in reviews_map:
             reviews_map[pid] = []
         reviews_map[pid].append(r)
@@ -134,7 +148,7 @@ async def get_all_user_products():
                 tags.append("best_seller")
         
         p = serialize_doc(p)
-        p["image"] = p.get("images", [None])[0]
+        p["image"] = (p.get("images") or [None])[0]
         p["tags"] = tags
         p["bs_score"] = round(bs_score, 2)
         p["recent_sales"] = recent_sales
@@ -158,13 +172,16 @@ def _calculate_weighted_rating(reviews):
     denominator = 0.0
     
     for r in reviews:
-        trust = r.get("trust_score", 1.0)
-        quality = r.get("quality_score", 1.0)
-        rating = r.get("rating", 0)
-        
-        weight = trust * quality
-        numerator += rating * weight
-        denominator += weight
+        try:
+            trust = float(r.get("trust_score", 1.0))
+            quality = float(r.get("quality_score", 1.0))
+            rating = float(r.get("rating", 0))
+            
+            weight = trust * quality
+            numerator += rating * weight
+            denominator += weight
+        except (ValueError, TypeError):
+            continue
         
     if denominator == 0:
         return 0, 0
@@ -178,19 +195,23 @@ async def get_single_user_product(product_id: str):
     if product_id == "undefined":
         return None
 
-    product = await products_collection.find_one(
-        {"_id": ObjectId(product_id)},
-        {
-            "_id": 1,
-            "title": 1,
-            "price": 1,
-            "description": 1,
-            "stock": 1,
-            "images": 1,
-            "created_at": 1,
-            "sold_count": 1
-        }
-    )
+    try:
+        product = await products_collection.find_one(
+            {"_id": ObjectId(product_id)},
+            {
+                "_id": 1,
+                "title": 1,
+                "price": 1,
+                "description": 1,
+                "stock": 1,
+                "images": 1,
+                "created_at": 1,
+                "sold_count": 1,
+                "category": 1
+            }
+        )
+    except Exception:
+        return None
 
     if not product:
         return None
@@ -216,11 +237,15 @@ async def get_single_user_product(product_id: str):
     agg_res = await orders_coll.aggregate(pipeline).to_list(1)
     recent_qty = agg_res[0]["total"] if agg_res else 0
 
+    # Fetch reviews for the product
+    reviews_coll = get_collection("reviews")
+    reviews = await reviews_coll.find({"product_id": product_id}).to_list(None)
+
     avg_rating, review_count = _calculate_weighted_rating(reviews)
 
     tags = _calculate_tags(product, recent_qty)
     product = serialize_doc(product)
-    product["image"] = product.get("images", [None])[0]
+    product["image"] = (product.get("images") or [None])[0]
     product["tags"] = tags
     product["rating"] = avg_rating
     product["review_count"] = review_count
@@ -235,10 +260,13 @@ async def get_recommended_user_products(product_id: str, limit: int = 4):
         return []
 
     # 1️⃣ Get current product
-    current = await products_collection.find_one(
-        {"_id": ObjectId(product_id)},
-        {"category_id": 1}
-    )
+    try:
+        current = await products_collection.find_one(
+            {"_id": ObjectId(product_id)},
+            {"category_id": 1}
+        )
+    except Exception:
+        return []
 
     if not current:
         return []
@@ -275,7 +303,7 @@ async def get_recommended_user_products(product_id: str, limit: int = 4):
         recent_qty = recent_sales_map.get(pid, 0)
         tags = _calculate_tags(p, recent_qty)
         p = serialize_doc(p)
-        p["image"] = p.get("images", [None])[0]
+        p["image"] = (p.get("images") or [None])[0]
         p["tags"] = tags
         result.append(p)
 

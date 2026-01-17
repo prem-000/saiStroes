@@ -11,13 +11,15 @@ def serialize_doc(doc):
             doc[k] = str(v)
 
     # Normalize category
-    if doc.get("category"):
-        doc["category"] = doc["category"].strip().lower()
+    category = doc.get("category")
+    if isinstance(category, str):
+        doc["category"] = category.strip().lower()
 
     # Primary image
     if not doc.get("image"):
-        if doc.get("images") and len(doc["images"]) > 0:
-            doc["image"] = doc["images"][0]
+        images = doc.get("images")
+        if isinstance(images, list) and len(images) > 0:
+            doc["image"] = images[0]
         else:
             doc["image"] = "/img/default.jpg"
 

@@ -8,9 +8,10 @@ from app.utils.serializer import serialize_doc
 async def get_all_categories():
     categories = set()
 
-    async for p in products_collection.find():
-        if p.get("category"):
-            normalized = p["category"].strip().lower()
+    async for p in products_collection.find({}, {"category": 1}):
+        category = p.get("category")
+        if isinstance(category, str):
+            normalized = category.strip().lower()
             categories.add(normalized)
 
     return list(categories)
@@ -37,8 +38,11 @@ async def get_products_by_category(category_name: str):
 
     result = []
     for p in products:
-        p = serialize_doc(p)                     # <-- FIX: convert _id → id
-        p["image"] = p.get("images", [None])[0]  # <-- FIX: get first image
-        result.append(p)
+        try:
+            p = serialize_doc(p)
+            p["image"] = p.get("images", [None])[0]
+            result.append(p)
+        except Exception:
+            continue
 
     return result
