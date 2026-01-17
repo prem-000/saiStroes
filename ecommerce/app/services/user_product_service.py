@@ -7,14 +7,33 @@ from app.utils.serializer import serialize_doc
 products_collection = get_collection("products")
 
 
-def _calculate_tags(p):
+async def _get_recent_sales_map(days=7):
+    """
+    Aggregation to get total quantity sold per product in the last X days.
+    """
+    orders_coll = get_collection("orders")
+    since = datetime.utcnow() - timedelta(days=days)
+    
+    pipeline = [
+        {"$match": {"created_at": {"$gte": since}, "status": {"$ne": "cancelled"}}},
+        {"$unwind": "$items"},
+        {"$group": {
+            "_id": "$items.product_id",
+            "recent_sales": {"$sum": "$items.quantity"}
+        }}
+    ]
+    
+    results = await orders_coll.aggregate(pipeline).to_list(None)
+    return {str(r["_id"]): r["recent_sales"] for r in results}
+
+
+def _calculate_tags(p, recent_sales=0, total_products=1):
     tags = []
     
-    # NEW TAG
+    # NEW TAG (last 7 days)
     created_at = p.get("created_at")
     if created_at:
         try:
-            # Handle string or datetime
             if isinstance(created_at, str):
                 created_at = datetime.fromisoformat(created_at.replace('Z', ''))
             
@@ -23,40 +42,43 @@ def _calculate_tags(p):
         except:
             pass
             
+    # TRENDING TAG
+    # If recent sales are significant (arbitrary threshold or relative to avg)
+    if recent_sales >= 5: # Minimum 5 sales in 7 days to be "trending"
+        tags.append("trending")
+
     # BEST SELLER TAG
+    # Refined: Need both lifetime sales and some recent activity to stay "Best Seller"
     sold = p.get("sold_count", 0)
-    if sold > 10:
+    if sold > 20 and (recent_sales > 0 or (datetime.utcnow() - p.get("created_at", datetime.utcnow())).days < 30):
         tags.append("best_seller")
         
     return tags
 
 
-def _calculate_best_seller_score(p, avg_rating, review_trust):
-    # Formula: (Velocity * 0.4) + (Revenue * 0.2) + (Trust * 0.2) + (Quality * 0.1) + (Trend * 0.1)
+def _calculate_best_seller_score(p, avg_rating, review_trust, recent_sales=0):
+    # Formula: (Recent Velocity * 0.5) + (Lifetime Sold * 0.1) + (Revenue * 0.1) + (Trust * 0.1) + (Quality * 0.1) + (Trend * 0.1)
     
-    # Mocking historical data for demonstration as we don't have order history analytics yet
-    # In production, this would aggregate from the `orders` collection
+    # 1. Sales Velocity (recent sales)
+    velocity = recent_sales / 7.0
     
-    # 1. Sales Velocity (orders last 7 days / 7)
-    # Using 'sold_count' as a proxy for total lifetime sales for now
-    velocity = (p.get("sold_count", 0) / 10)  # simple proxy
+    # 2. Revenue (based on price)
+    revenue = p.get("price", 0) * recent_sales
     
-    # 2. Revenue (price * quantity sold)
-    revenue = p.get("price", 0) * p.get("sold_count", 0)
-    
-    # 3. Recent Trend (mocked random factor for demo, or 1.0)
-    trend = 1.0 
+    # 3. Lifetime sales proxy
+    lifetime = p.get("sold_count", 0)
     
     # Normalize values (simple scaling)
-    # Assuming max expected velocity ~ 10, max revenue ~ 10000
-    norm_velocity = min(velocity / 10, 1.0)
-    norm_revenue = min(revenue / 10000, 1.0)
+    norm_velocity = min(velocity / 2, 1.0) # 2 sales/day is max norm
+    norm_revenue = min(revenue / 5000, 1.0)
+    norm_lifetime = min(lifetime / 100, 1.0)
     
-    score = (norm_velocity * 0.4) + \
-            (norm_revenue * 0.2) + \
-            (review_trust * 0.2) + \
+    score = (norm_velocity * 0.5) + \
+            (norm_lifetime * 0.1) + \
+            (norm_revenue * 0.1) + \
+            (review_trust * 0.1) + \
             ((avg_rating / 5) * 0.1) + \
-            (trend * 0.1)
+            (0.1) # Trend base
             
     return score
 
@@ -78,6 +100,9 @@ async def get_all_user_products():
         }
     ).to_list(None)
 
+    # Fetch recent sales map
+    recent_sales_map = await _get_recent_sales_map(7)
+
     # Pre-fetch reviews to calculate scores
     reviews_coll = get_collection("reviews")
     all_reviews = await reviews_coll.find({}).to_list(None)
@@ -96,14 +121,15 @@ async def get_all_user_products():
         prod_reviews = reviews_map.get(pid, [])
         avg_rating, _ = _calculate_weighted_rating(prod_reviews)
         
-        # Calculate Best Seller Score
-        # Trust is 1.0 by default in our model currently
-        bs_score = _calculate_best_seller_score(p, avg_rating, 1.0)
+        recent_sales = recent_sales_map.get(pid, 0)
         
-        tags = _calculate_tags(p)
+        # Calculate Best Seller Score with Recent Velocity
+        bs_score = _calculate_best_seller_score(p, avg_rating, 1.0, recent_sales)
         
-        # Override "Best Seller" tag based on Score
-        if bs_score > 0.5: # Arbitrary threshold for "High Score"
+        tags = _calculate_tags(p, recent_sales, len(products))
+        
+        # Override "Best Seller" tag based on Score if very high
+        if bs_score > 0.6: 
             if "best_seller" not in tags:
                 tags.append("best_seller")
         
@@ -111,9 +137,10 @@ async def get_all_user_products():
         p["image"] = p.get("images", [None])[0]
         p["tags"] = tags
         p["bs_score"] = round(bs_score, 2)
+        p["recent_sales"] = recent_sales
         result.append(p)
 
-    # Sort by Best Seller Score Descending
+    # Sort by Best Seller Score Descending (Trending/Hot items first)
     result.sort(key=lambda x: x.get("bs_score", 0), reverse=True)
 
     return result
@@ -168,19 +195,36 @@ async def get_single_user_product(product_id: str):
     if not product:
         return None
 
-    # Calculate Weighted Rating
-    # We need to fetch reviews. To avoid circular imports, accessing collection directly.
-    reviews_coll = get_collection("reviews")
-    reviews = await reviews_coll.find({"product_id": product_id}).to_list(None)
-    
+    # Calculate Recent Sales for this specific product
+    orders_coll = get_collection("orders")
+    since = datetime.utcnow() - timedelta(days=7)
+    recent_sales_count = await orders_coll.count_documents({
+        "created_at": {"$gte": since},
+        "status": {"$ne": "cancelled"},
+        "items.product_id": product_id
+    })
+
+    # Note: count_documents above counts orders, not quantity. 
+    # For a single product view, we'll proxy it or use aggregation if needed.
+    # Let's use aggregation for accuracy in quantity.
+    pipeline = [
+        {"$match": {"created_at": {"$gte": since}, "status": {"$ne": "cancelled"}, "items.product_id": product_id}},
+        {"$unwind": "$items"},
+        {"$match": {"items.product_id": product_id}},
+        {"$group": {"_id": None, "total": {"$sum": "$items.quantity"}}}
+    ]
+    agg_res = await orders_coll.aggregate(pipeline).to_list(1)
+    recent_qty = agg_res[0]["total"] if agg_res else 0
+
     avg_rating, review_count = _calculate_weighted_rating(reviews)
 
-    tags = _calculate_tags(product)
+    tags = _calculate_tags(product, recent_qty)
     product = serialize_doc(product)
     product["image"] = product.get("images", [None])[0]
     product["tags"] = tags
     product["rating"] = avg_rating
     product["review_count"] = review_count
+    product["recent_sales"] = recent_qty
 
     return product
 
@@ -223,9 +267,13 @@ async def get_recommended_user_products(product_id: str, limit: int = 4):
     random.shuffle(products)
 
     # 4️⃣ Limit results
+    recent_sales_map = await _get_recent_sales_map(7)
+    
     result = []
     for p in products[:limit]:
-        tags = _calculate_tags(p)
+        pid = str(p["_id"])
+        recent_qty = recent_sales_map.get(pid, 0)
+        tags = _calculate_tags(p, recent_qty)
         p = serialize_doc(p)
         p["image"] = p.get("images", [None])[0]
         p["tags"] = tags

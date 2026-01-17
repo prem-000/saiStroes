@@ -60,3 +60,8 @@ class OrderResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+
+class CancelOrderRequest(BaseModel):
+    move_to_wishlist: bool = False

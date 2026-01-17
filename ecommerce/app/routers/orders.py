@@ -176,32 +176,6 @@ async def delete_order(order_id: str, user=Depends(get_current_user)):
 # ---------------------------------------------
 # CANCEL ORDER (USER)
 # ---------------------------------------------
-@router.put("/{order_id}/cancel")
-async def cancel_order(order_id: str, user=Depends(get_current_user)):
-    user_id = str(user["_id"])
-
-    order = await orders_collection.find_one({"_id": ObjectId(order_id), "user_id": user_id})
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-
-    if order["status"] not in ["pending", "accepted", "packed"]:
-        raise HTTPException(status_code=400, detail=f"Cannot cancel order with status: {order['status']}")
-
-    # Restore Stock if it was already reduced (accepted/packed)
-    if order.get("stock_reduced"):
-        for item in order["items"]:
-            from app.models.products import products_collection
-            await products_collection.update_one(
-                {"_id": ObjectId(item["product_id"])},
-                {"$inc": {"stock": item["quantity"]}}
-            )
-
-    await orders_collection.update_one(
-        {"_id": ObjectId(order_id)},
-        {"$set": {"status": "cancelled", "stock_reduced": False}}
-    )
-
-    return {"message": "Order cancelled successfully"}
 
 
 # ---------------------------------------------
@@ -262,3 +236,84 @@ async def mark_read(notif_id: str, user=Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Notification not found")
 
     return {"message": "Notification marked as read"}
+
+
+# ---------------------------------------------
+# CANCEL ORDER (USER) + OPTIONAL MOVE TO WISHLIST
+# ---------------------------------------------
+from app.schemas.order_schema import CancelOrderRequest
+from app.database import get_collection
+
+wishlist_collection = get_collection("wishlist")
+
+@router.put("/{order_id}/cancel")
+async def cancel_order(
+    order_id: str,
+    payload: CancelOrderRequest,
+    user=Depends(get_current_user)
+):
+    user_id = str(user["_id"])
+
+    order = await orders_collection.find_one({
+        "_id": ObjectId(order_id),
+        "user_id": user_id
+    })
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if order["status"] not in ["pending", "accepted", "packed"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot cancel order with status: {order['status']}"
+        )
+
+    # ---------------- RESTORE STOCK ----------------
+    if order.get("stock_reduced"):
+        from app.models.products import products_collection
+
+        for item in order["items"]:
+            await products_collection.update_one(
+                {"_id": ObjectId(item["product_id"])},
+                {"$inc": {"stock": item["quantity"]}}
+            )
+
+    # ---------------- MOVE ITEMS TO WISHLIST ----------------
+    moved_items = []
+
+    if payload.move_to_wishlist:
+        for item in order["items"]:
+
+            exists = await wishlist_collection.find_one({
+                "user_id": user_id,
+                "product_id": item["product_id"]
+            })
+
+            if not exists:
+                await wishlist_collection.insert_one({
+                    "user_id": user_id,
+                    "product_id": item["product_id"],
+                    "created_at": datetime.utcnow().isoformat(),
+                    "source": "order_cancel",
+                    "order_id": str(order["_id"])
+                })
+
+                moved_items.append(item["product_id"])
+
+    # ---------------- UPDATE ORDER STATUS ----------------
+    await orders_collection.update_one(
+        {"_id": ObjectId(order_id)},
+        {
+            "$set": {
+                "status": "cancelled",
+                "stock_reduced": False,
+                "cancelled_at": datetime.utcnow()
+            }
+        }
+    )
+
+    return {
+        "message": "Order cancelled successfully",
+        "moved_to_wishlist": payload.move_to_wishlist,
+        "items_added_to_wishlist": moved_items
+    }

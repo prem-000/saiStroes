@@ -148,22 +148,47 @@ function updateCounts() {
 }
 
 /* --------------------------------------------------
-   CANCEL ORDER
+   CANCEL ORDER (MODAL FLOW)
 -------------------------------------------------- */
-window.cancelOrder = async function (orderId) {
-    if (!confirm("Are you sure you want to cancel this order?")) return;
+let pendingCancelId = null;
+
+window.cancelOrder = function (orderId) {
+    pendingCancelId = orderId;
+    document.getElementById("cancelModal").style.display = "block";
+    document.getElementById("moveWishlistCheck").checked = false;
+};
+
+window.closeCancelModal = function () {
+    document.getElementById("cancelModal").style.display = "none";
+    pendingCancelId = null;
+};
+
+document.getElementById("confirmCancelBtn").onclick = async function () {
+    if (!pendingCancelId) return;
+
+    const move = document.getElementById("moveWishlistCheck").checked;
+    const btn = this;
 
     try {
-        await apiRequest(`/orders/${orderId}/cancel`, "PUT"); // Assuming endpoint exists or DELETE
-        // Or if you use DELETE for cancel:
-        // await apiRequest(`/orders/${orderId}`, "DELETE"); 
+        btn.disabled = true;
+        btn.innerText = "Cancelling...";
 
-        // Refresh
+        await apiRequest(`/orders/${pendingCancelId}/cancel`, "PUT", {
+            move_to_wishlist: move
+        });
+
+        closeCancelModal();
         await loadOrders();
-        alert("Order cancelled successfully");
+
+        alert(move
+            ? "Order cancelled and items added to wishlist!"
+            : "Order cancelled successfully."
+        );
 
     } catch (err) {
         alert("Failed to cancel order: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Confirm";
     }
 };
-

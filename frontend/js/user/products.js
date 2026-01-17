@@ -81,14 +81,15 @@ async function loadCategorySections() {
 
                         <section class="horizontal-scroll" id="list-${category}">
                             ${products.map(p => `
-                                <div class="product-card">
-                                    ${p.tags && p.tags.includes("new") ? '<span class="product-tag tag-new">New</span>' : ''}
-                                    ${p.tags && p.tags.includes("best_seller") ? '<span class="product-tag tag-best-selling">Best Seller</span>' : ''}
-                                    <img src="${p.image || './default.jpg'}" loading="lazy" class="product-img">
-                                    <h3>${p.title}</h3>
-                                    <p class="price">₹${p.price}</p>
-                                    <button onclick="viewProduct('${p.id}')">View</button>
-                                </div>
+                                    <div class="product-card">
+                                        ${p.tags && p.tags.includes("new") ? '<span class="product-tag tag-new">New</span>' : ''}
+                                        ${p.tags && p.tags.includes("best_seller") ? '<span class="product-tag tag-best-selling">Best Seller</span>' : ''}
+                                        ${p.tags && p.tags.includes("trending") ? '<span class="product-tag tag-trending">Trending</span>' : ''}
+                                        <img src="${p.image || './default.jpg'}" loading="lazy" class="product-img">
+                                        <h3>${p.title}</h3>
+                                        <p class="price">₹${p.price}</p>
+                                        <button onclick="viewProduct('${p.id}')">View</button>
+                                    </div>
                             `).join("")}
                         </section>
 
@@ -160,6 +161,9 @@ function initCategoryFilter() {
                             <section class="horizontal-scroll" id="list-${category}">
                                 ${products.map(p => `
                                     <div class="product-card">
+                                        ${p.tags && p.tags.includes("new") ? '<span class="product-tag tag-new">New</span>' : ''}
+                                        ${p.tags && p.tags.includes("best_seller") ? '<span class="product-tag tag-best-selling">Best Seller</span>' : ''}
+                                        ${p.tags && p.tags.includes("trending") ? '<span class="product-tag tag-trending">Trending</span>' : ''}
                                         <img src="${p.image || './default.jpg'}" loading="lazy" class="product-img">
                                         <h3>${p.title}</h3>
                                         <p class="price">₹${p.price}</p>
@@ -209,17 +213,28 @@ async function loadSingleProduct() {
                     <p>${p.description}</p>
                     <p>Stock: <b>${p.stock}</b></p>
 
-                    <button
-                    class="btn add-cart-btn"
-                    onclick="addToCart('${p.id}', 1, this)">
-                    Add to Cart
-                    </button>
+                    <div class="product-actions">
+                        <button
+                            class="btn add-cart-btn"
+                            onclick="addToCart('${p.id}', 1, this)">
+                            Add to Cart
+                        </button>
+
+                        <button id="wishBtn" class="btn wish-btn" onclick="toggleWishlist('${p.id}', this)">
+                            <i class="fa-regular fa-heart"></i> Add to Wishlist
+                        </button>
+                    </div>
 
                     <button class="btn buy-btn" onclick="buyNow('${p.id}')">Buy Now</button>
 
                     <div class="recommended-section">
-                    <h3 class="section-title">You may also like</h3>
-                    <div id="recommendedList" class="recommended-list"></div>
+                        <h3 class="section-title">You may also like</h3>
+                        <div id="recommendedList" class="recommended-list"></div>
+                    </div>
+
+                    <div id="trendingProductsSection" class="recommended-section" style="display: none;">
+                        <h3 class="section-title">Trending Now <span>🔥</span></h3>
+                        <div id="trendingProductsList" class="recommended-list"></div>
                     </div>
 
                     <!-- REVIEWS SECTION -->
@@ -244,11 +259,55 @@ async function loadSingleProduct() {
             </div>
         `;
         loadRecommendations(productId);
+        loadTrendingProducts();
         loadReviews(productId);
+        checkWishlistStatus(productId);
     } catch {
         container.innerHTML = `<p>Product not found.</p>`;
     }
 }
+
+async function checkWishlistStatus(productId) {
+    const btn = document.getElementById("wishBtn");
+    if (!btn) return;
+
+    try {
+        const wishlist = await apiRequest("/wishlist/");
+        const inWishlist = wishlist.some(item => item.product_id === productId);
+
+        if (inWishlist) {
+            btn.classList.add("active");
+            btn.innerHTML = `<i class="fa-solid fa-heart"></i> In Wishlist`;
+        }
+    } catch (err) {
+        console.error("Wishlist check failed:", err);
+    }
+}
+
+window.toggleWishlist = async function (productId, btn) {
+    const token = localStorage.getItem("user_token");
+    if (!token) {
+        alert("Please login to manage wishlist");
+        return;
+    }
+
+    try {
+        btn.disabled = true;
+        const res = await apiRequest(`/wishlist/toggle/${productId}`, "POST");
+
+        if (res.status === "added") {
+            btn.classList.add("active");
+            btn.innerHTML = `<i class="fa-solid fa-heart"></i> In Wishlist`;
+        } else {
+            btn.classList.remove("active");
+            btn.innerHTML = `<i class="fa-regular fa-heart"></i> Add to Wishlist`;
+        }
+    } catch (err) {
+        alert("Failed to update wishlist");
+    } finally {
+        btn.disabled = false;
+    }
+};
 
 
 /* --------------------------------------------------
@@ -288,6 +347,43 @@ async function loadRecommendations(productId) {
 }
 
 /* --------------------------------------------------
+    TRENDING PRODUCTS (FOR PRODUCT PAGE)
+-------------------------------------------------- */
+async function loadTrendingProducts() {
+    try {
+        const products = await apiRequest("/user/products/");
+        const list = document.getElementById("trendingProductsList");
+        const section = document.getElementById("trendingProductsSection");
+
+        if (!list || !section) return;
+
+        // Filter out the current product and take top 5 by bs_score
+        const trending = products
+            .filter(p => p.id !== productId)
+            .slice(0, 5);
+
+        if (!trending.length) {
+            section.style.display = "none";
+            return;
+        }
+
+        section.style.display = "block";
+        list.innerHTML = trending.map(p => `
+            <div class="product-card">
+                ${p.tags && p.tags.includes("trending") ? '<span class="product-tag tag-trending">Trending</span>' : ''}
+                <img src="${p.image || '../img/default.jpg'}" class="product-img">
+                <h3>${p.title}</h3>
+                <p class="price">₹${p.price}</p>
+                <button onclick="viewProduct('${p.id}')">View</button>
+            </div>
+        `).join("");
+
+    } catch (err) {
+        console.error("Trending products error:", err);
+    }
+}
+
+/* --------------------------------------------------
     SEARCH
 -------------------------------------------------- */
 function initSearch() {
@@ -312,6 +408,9 @@ function initSearch() {
                 <section class="horizontal-scroll">
                     ${results.map(p => `
                         <div class="product-card">
+                            ${p.tags && p.tags.includes("new") ? '<span class="product-tag tag-new">New</span>' : ''}
+                            ${p.tags && p.tags.includes("best_seller") ? '<span class="product-tag tag-best-selling">Best Seller</span>' : ''}
+                            ${p.tags && p.tags.includes("trending") ? '<span class="product-tag tag-trending">Trending</span>' : ''}
                             <img src="${p.image || './default.jpg'}" class="product-img">
                             <h3>${p.title}</h3>
                             <p class="price">₹${p.price}</p>
@@ -394,94 +493,99 @@ window.buyNow = async (id) => {
 };
 
 /* --------------------------------------------------
-   BANNERS (HOMEPAGE ONLY)
+   DYNAMIC BANNERS (HOMEPAGE ONLY)
 -------------------------------------------------- */
-let bannerInterval;
+const COLOR_PALETTES = [
+    ["#FF6B35", "#F7931E", "#FDC830"], // Orange
+    ["#667EEA", "#764BA2", "#F093FB"], // Purple
+    ["#4FACFE", "#00F2FE", "#43E97B"], // Blue
+    ["#FF0844", "#FFB199", "#FF0844"], // Red
+    ["#09203F", "#537895", "#09203F"]  // Dark
+];
+
+const TEXT_VARIATIONS = [
+    "Crunchy Snacks for Every Mood",
+    "Pick Your Perfect Snack",
+    "Fresh Groceries, Faster Delivery",
+    "Delicious Deals Just for You",
+    "Smart Savings on Daily Essentials"
+];
+
+let currentBannerTimer = null;
+let isBannerHovered = false;
 
 async function loadBanners() {
-    const slider = document.getElementById("bannerSlider");
-    const wrapper = slider ? slider.parentElement : null;
-    if (!slider || !wrapper) return; // not homepage
+    const banner = document.getElementById("dynamicBanner");
+    if (!banner) return; // not homepage
 
-    try {
-        const banners = await apiRequest("/api/banners");
+    // Initial load
+    updateDynamicBanner();
 
-        if (!banners || banners.length === 0) {
-            wrapper.style.display = "none";
-            return;
+    // Start rotation
+    startBannerRotation();
+
+    // Hover logic
+    banner.addEventListener("mouseenter", () => {
+        isBannerHovered = true;
+        if (currentBannerTimer) clearTimeout(currentBannerTimer);
+    });
+
+    banner.addEventListener("mouseleave", () => {
+        isBannerHovered = false;
+        startBannerRotation();
+    });
+}
+
+function startBannerRotation() {
+    if (currentBannerTimer) clearTimeout(currentBannerTimer);
+    currentBannerTimer = setTimeout(async () => {
+        if (!isBannerHovered) {
+            await updateDynamicBanner();
+            startBannerRotation();
         }
-
-        // 1. Render Slides
-        slider.innerHTML = banners.map(b => `
-            <div class="banner-slide">
-                <img src="${b.image}" alt="${b.title}" loading="lazy">
-            </div>
-        `).join("");
-
-        // 2. Render Dots
-        const existingDots = wrapper.querySelector(".banner-dots");
-        if (existingDots) existingDots.remove();
-
-        const dotsContainer = document.createElement("div");
-        dotsContainer.className = "banner-dots";
-
-        banners.forEach((_, i) => {
-            const dot = document.createElement("div");
-            dot.className = `dot ${i === 0 ? "active" : ""}`;
-            dot.onclick = () => {
-                scrollToBanner(i);
-                resetBannerTimer(); // Reset timer on manual interaction
-            };
-            dotsContainer.appendChild(dot);
-        });
-
-        wrapper.appendChild(dotsContainer);
-
-        // 3. Listen for scroll to update dots (e.g. user swipe)
-        slider.addEventListener("scroll", () => {
-            const index = Math.round(slider.scrollLeft / slider.offsetWidth);
-            updateBannerDots(index);
-        }, { passive: true });
-
-        // 4. Start Timer
-        startBannerAutoScroll();
-
-    } catch (err) {
-        console.error("Failed loading banners:", err);
-    }
+    }, 5000);
 }
 
-function updateBannerDots(index) {
-    const dots = document.querySelectorAll(".banner-dots .dot");
-    dots.forEach((d, i) => {
-        if (i === index) d.classList.add("active");
-        else d.classList.remove("active");
-    });
-}
+async function updateDynamicBanner() {
+    const banner = document.getElementById("dynamicBanner");
+    const content = document.getElementById("bannerContent");
+    const textEl = document.getElementById("bannerText");
+    const productsEl = document.getElementById("bannerProducts");
 
-function scrollToBanner(index) {
-    const slider = document.getElementById("bannerSlider");
-    if (!slider) return;
-    slider.scrollTo({
-        left: slider.offsetWidth * index,
-        behavior: "smooth"
-    });
-}
+    if (!banner || !content || !allProducts || allProducts.length === 0) return;
 
-function startBannerAutoScroll() {
-    if (bannerInterval) clearInterval(bannerInterval);
-    bannerInterval = setInterval(() => {
-        const slider = document.getElementById("bannerSlider");
-        if (!slider || slider.children.length === 0) return;
+    // 1. Fade out
+    content.classList.add("fade-out");
 
-        let index = Math.round(slider.scrollLeft / slider.offsetWidth);
-        index = (index + 1) % slider.children.length;
-        scrollToBanner(index);
-    }, 4000);
-}
+    await new Promise(r => setTimeout(r, 500));
 
-function resetBannerTimer() {
-    startBannerAutoScroll();
+    // 2. Select Random Items
+    const palette = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
+    const angle = Math.floor(Math.random() * 360);
+    const slogan = TEXT_VARIATIONS[Math.floor(Math.random() * TEXT_VARIATIONS.length)];
+
+    // Pick 3-5 random products
+    const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
+    const selectedProds = shuffled.slice(0, 3 + Math.floor(Math.random() * 2));
+
+    // 3. Update Styles & Content
+    banner.style.background = `linear-gradient(${angle}deg, ${palette[0]} 0%, ${palette[1]} 50%, ${palette[2]} 100%)`;
+
+    textEl.innerText = slogan;
+    textEl.style.color = "#fff";
+    textEl.style.fontSize = `${32 + Math.random() * 20}px`;
+    textEl.style.transform = `rotate(${Math.random() * 6 - 3}deg)`;
+
+    productsEl.innerHTML = selectedProds.map((p, i) => `
+        <img src="${p.image || './default.jpg'}" 
+             class="banner-prod-img" 
+             onclick="viewProduct('${p.id}')"
+             title="${p.title}"
+             style="transition-delay: ${i * 0.1}s">
+    `).join("");
+
+    // 4. Fade in
+    content.classList.remove("fade-out");
 }
 
 /* --------------------------------------------------

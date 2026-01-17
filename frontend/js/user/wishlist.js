@@ -1,41 +1,23 @@
 import { apiRequest } from "../api.js";
 
-const container = document.getElementById("wishlistContainer");
+const grid = document.getElementById("wishlistGrid");
 
 async function loadWishlist() {
     try {
         const items = await apiRequest("/wishlist/");
 
-        if (!items.length) {
-            container.innerHTML = "<p>No items in wishlist.</p>";
+        if (!items || items.length === 0) {
+            grid.innerHTML = `
+                <div style="text-align:center; padding: 50px 20px;">
+                    <i class="fa-regular fa-heart" style="font-size: 50px; color: #ddd; margin-bottom: 20px; display:block;"></i>
+                    <p style="color:#888;">Your wishlist is empty.</p>
+                    <a href="products.html" style="color:#4a6cf7; text-decoration:none; font-weight:600; margin-top:20px; display:inline-block;">Go Shopping</a>
+                </div>
+            `;
             return;
         }
 
-        // Fetch complete product info for each wishlist item
-        const detailedItems = await Promise.all(
-            items.map(async (item) => {
-                try {
-                    const product = await apiRequest(`/user/products/${item.product_id}`);
-
-                    return {
-                        product_id: item.product_id,
-                        title: product.title,
-                        price: product.price,
-                        image: product.image,
-                    };
-                } catch (err) {
-                    console.error("Product fetch failed:", item.product_id);
-                    return {
-                        product_id: item.product_id,
-                        title: "Unknown Product",
-                        price: 0,
-                        image: "../img/default.jpg",
-                    };
-                }
-            })
-        );
-
-        container.innerHTML = detailedItems
+        grid.innerHTML = items
             .map(
                 (item) => `
             <div class="wish-card">
@@ -46,15 +28,13 @@ async function loadWishlist() {
                     <p class="wish-price">₹${item.price}</p>
 
                     <div class="wishlist-actions">
-
                         <button class="btn-cart" onclick="moveToCart('${item.product_id}')">
-                            Move to Cart
+                            <i class="fa-solid fa-cart-plus"></i> Move to Cart
                         </button>
 
                         <button class="btn-remove" onclick="removeFromWishlist('${item.product_id}')">
-                            Remove
+                            <i class="fa-solid fa-trash-can"></i>
                         </button>
-
                     </div>
                 </div>
             </div>
@@ -64,7 +44,7 @@ async function loadWishlist() {
 
     } catch (err) {
         console.error(err);
-        container.innerHTML = "<p>Failed to load wishlist.</p>";
+        grid.innerHTML = "<p>Failed to load wishlist. Please try logging in again.</p>";
     }
 }
 
@@ -74,6 +54,8 @@ loadWishlist();
    REMOVE FROM WISHLIST
 -------------------------------------------------- */
 window.removeFromWishlist = async function (productId) {
+    if (!confirm("Remove this item?")) return;
+
     try {
         await apiRequest(`/wishlist/remove/${productId}`, "DELETE");
         loadWishlist();
@@ -91,7 +73,7 @@ window.moveToCart = async function (productId) {
         await apiRequest(`/cart/add?product_id=${productId}&quantity=1`, "POST");
         await apiRequest(`/wishlist/remove/${productId}`, "DELETE");
 
-        alert("Moved to cart!");
+        alert("Added to cart!");
         loadWishlist();
     } catch (err) {
         console.error(err);
