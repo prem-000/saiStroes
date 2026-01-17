@@ -115,6 +115,161 @@ window.scrollRightCat = (cat) => {
 };
 
 /* --------------------------------------------------
+    CATEGORY ICON MAPPING
+-------------------------------------------------- */
+const CATEGORY_ICONS = {
+    // Grocery & Food
+    "grocery": "fa-solid fa-basket-shopping",
+    "groceries": "fa-solid fa-basket-shopping",
+
+    // Electronics
+    "electronics": "fa-solid fa-laptop",
+    "electronic": "fa-solid fa-laptop",
+
+    // Fruits & Vegetables
+    "fruits": "fa-solid fa-apple-whole",
+    "vegetables": "fa-solid fa-carrot",
+    "veggies": "fa-solid fa-carrot",
+    "organic": "fa-solid fa-leaf",
+
+    // Dairy & Eggs
+    "dairy": "fa-solid fa-cheese",
+    "milk": "fa-solid fa-bottle-droplet",
+    "eggs": "fa-solid fa-egg",
+
+    // Bakery & Bread
+    "bakery": "fa-solid fa-bread-slice",
+    "bread": "fa-solid fa-bread-slice",
+
+    // Beverages
+    "beverages": "fa-solid fa-mug-hot",
+    "drinks": "fa-solid fa-glass-water",
+    "coffee": "fa-solid fa-mug-hot",
+    "tea": "fa-solid fa-mug-saucer",
+    "juice": "fa-solid fa-wine-bottle",
+
+    // Snacks & Sweets
+    "snacks": "fa-solid fa-cookie",
+    "sweets": "fa-solid fa-candy-cane",
+    "candy": "fa-solid fa-candy-cane",
+    "chips": "fa-solid fa-cookie-bite",
+    "chocolate": "fa-solid fa-candy-cane",
+
+    // Meat & Seafood
+    "meat": "fa-solid fa-drumstick-bite",
+    "chicken": "fa-solid fa-drumstick-bite",
+    "fish": "fa-solid fa-fish",
+    "seafood": "fa-solid fa-fish-fins",
+
+    // Grains & Staples
+    "grains": "fa-solid fa-wheat-awn",
+    "rice": "fa-solid fa-bowl-rice",
+    "pasta": "fa-solid fa-bowl-food",
+    "cereals": "fa-solid fa-wheat-awn",
+
+    // Frozen Foods
+    "frozen": "fa-solid fa-snowflake",
+    "ice cream": "fa-solid fa-ice-cream",
+
+    // Household & Personal Care
+    "household": "fa-solid fa-house",
+    "cleaning": "fa-solid fa-spray-can-sparkles",
+    "personal care": "fa-solid fa-pump-soap",
+    "beauty": "fa-solid fa-spa",
+
+    // Baby & Kids
+    "baby": "fa-solid fa-baby",
+    "kids": "fa-solid fa-child",
+
+    // Health & Wellness
+    "health": "fa-solid fa-heart-pulse",
+    "vitamins": "fa-solid fa-pills",
+    "supplements": "fa-solid fa-capsules",
+
+    // Spices & Condiments
+    "spices": "fa-solid fa-pepper-hot",
+    "condiments": "fa-solid fa-jar",
+    "sauces": "fa-solid fa-bottle-droplet",
+
+    // Canned & Packaged
+    "canned": "fa-solid fa-can-food",
+    "packaged": "fa-solid fa-box",
+
+    // Pet Supplies
+    "pet": "fa-solid fa-paw",
+    "pet food": "fa-solid fa-bone",
+
+    // Default
+    "default": "fa-solid fa-cart-shopping"
+};
+
+// Color palette for categories
+const CATEGORY_COLORS = {
+    "grocery": "#22c55e",
+    "groceries": "#22c55e",
+    "electronics": "#3b82f6",
+    "electronic": "#3b82f6",
+    "fruits": "#ef4444",
+    "vegetables": "#10b981",
+    "veggies": "#10b981",
+    "organic": "#84cc16",
+    "dairy": "#fbbf24",
+    "milk": "#fbbf24",
+    "eggs": "#f59e0b",
+    "bakery": "#d97706",
+    "bread": "#d97706",
+    "beverages": "#8b5cf6",
+    "drinks": "#6366f1",
+    "coffee": "#78350f",
+    "tea": "#059669",
+    "juice": "#ec4899",
+    "snacks": "#f97316",
+    "sweets": "#ec4899",
+    "candy": "#f472b6",
+    "chips": "#fb923c",
+    "chocolate": "#7c2d12",
+    "meat": "#dc2626",
+    "chicken": "#ea580c",
+    "fish": "#0ea5e9",
+    "seafood": "#06b6d4",
+    "grains": "#ca8a04",
+    "rice": "#eab308",
+    "pasta": "#fbbf24",
+    "cereals": "#f59e0b",
+    "frozen": "#0284c7",
+    "ice cream": "#38bdf8",
+    "household": "#6366f1",
+    "cleaning": "#8b5cf6",
+    "personal care": "#a855f7",
+    "beauty": "#d946ef",
+    "baby": "#f472b6",
+    "kids": "#fb7185",
+    "health": "#14b8a6",
+    "vitamins": "#2dd4bf",
+    "supplements": "#5eead4",
+    "spices": "#dc2626",
+    "condiments": "#f97316",
+    "sauces": "#fb923c",
+    "canned": "#64748b",
+    "packaged": "#475569",
+    "pet": "#a855f7",
+    "pet food": "#c026d3",
+    "default": "#6b7280"
+};
+
+// Helper function to get icon for category
+function getCategoryIcon(categoryName) {
+    const normalized = categoryName.toLowerCase().trim();
+    return CATEGORY_ICONS[normalized] || CATEGORY_ICONS["default"];
+}
+
+// Helper function to get color for category
+function getCategoryColor(categoryName) {
+    const normalized = categoryName.toLowerCase().trim();
+    return CATEGORY_COLORS[normalized] || CATEGORY_COLORS["default"];
+}
+
+/* --------------------------------------------------
     CATEGORY GRID
 -------------------------------------------------- */
 async function loadCategories() {
@@ -126,7 +281,8 @@ async function loadCategories() {
         categoryGrid.innerHTML = categories
             .map(cat => `
                 <div class="cat-card" data-category="${cat}">
-                    ${cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    <i class="${getCategoryIcon(cat)}" style="color: ${getCategoryColor(cat)}"></i>
+                    <span>${cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
                 </div>
             `).join("");
 
@@ -496,19 +652,24 @@ window.buyNow = async (id) => {
    DYNAMIC BANNERS (HOMEPAGE ONLY)
 -------------------------------------------------- */
 const COLOR_PALETTES = [
-    ["#FF6B35", "#F7931E", "#FDC830"], // Orange
-    ["#667EEA", "#764BA2", "#F093FB"], // Purple
-    ["#4FACFE", "#00F2FE", "#43E97B"], // Blue
-    ["#FF0844", "#FFB199", "#FF0844"], // Red
-    ["#09203F", "#537895", "#09203F"]  // Dark
+    ["#1a1a2e", "#16213e", "#0f3460"], // Deep Navy
+    ["#2d1b69", "#5b2c6f", "#8e44ad"], // Royal Purple
+    ["#0a192f", "#172a45", "#1e3a5f"], // Midnight Blue
+    ["#1f1c2c", "#928dab", "#5f4b8b"], // Twilight Purple
+    ["#141e30", "#243b55", "#2c5364"], // Ocean Deep
+    ["#2c003e", "#512b58", "#7b2869"], // Deep Magenta
+    ["#000428", "#004e92", "#1a5490"], // Deep Ocean
+    ["#360033", "#0b8793", "#1a5f7a"]  // Teal Night
 ];
 
 const TEXT_VARIATIONS = [
-    "Crunchy Snacks for Every Mood",
-    "Pick Your Perfect Snack",
-    "Fresh Groceries, Faster Delivery",
-    "Delicious Deals Just for You",
-    "Smart Savings on Daily Essentials"
+    "✨ Discover Premium Picks",
+    "🔥 Trending Now - Shop Fresh",
+    "🎯 Your Daily Essentials Await",
+    "💫 Handpicked Just For You",
+    "🌟 Quality Meets Convenience",
+    "🛒 Fresh Deals, Fast Delivery",
+    "⚡ Shop Smart, Save More"
 ];
 
 let currentBannerTimer = null;
@@ -660,3 +821,127 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 setInterval(updateNotificationCount, 30000);
+
+/* --------------------------------------------------
+   HERO BANNER AUTO-ROTATION
+-------------------------------------------------- */
+const HERO_BANNERS = [
+    {
+        hook: "Level Up Your Audio",
+        subtext: "Premium wireless earbuds with 40hr battery",
+        cta: "Shop Now",
+        category: "electronics"
+    },
+    {
+        hook: "Summer Sale 50% Off",
+        subtext: "Huge discounts on fresh groceries",
+        cta: "Shop Deals",
+        category: "grocery"
+    },
+    {
+        hook: "Fresh Daily Essentials",
+        subtext: "Hand-picked fruits & vegetables every morning",
+        cta: "Shop Fresh",
+        category: "fruits"
+    },
+    {
+        hook: "Premium Snacks Await",
+        subtext: "Crunchy, tasty, and always fresh",
+        cta: "Explore Snacks",
+        category: "snacks"
+    }
+];
+
+let currentHeroIndex = 0;
+let heroRotationTimer = null;
+let heroProductId = null;
+
+async function loadHeroBanner() {
+    const heroBanner = document.getElementById("heroBanner");
+    if (!heroBanner || !allProducts || allProducts.length === 0) return;
+
+    await updateHeroBanner();
+    startHeroRotation();
+
+    // Pause on hover
+    heroBanner.addEventListener("mouseenter", () => {
+        if (heroRotationTimer) clearTimeout(heroRotationTimer);
+    });
+
+    heroBanner.addEventListener("mouseleave", () => {
+        startHeroRotation();
+    });
+}
+
+function startHeroRotation() {
+    if (heroRotationTimer) clearTimeout(heroRotationTimer);
+    heroRotationTimer = setTimeout(async () => {
+        currentHeroIndex = (currentHeroIndex + 1) % HERO_BANNERS.length;
+        await updateHeroBanner();
+        startHeroRotation();
+    }, 8000);
+}
+
+async function updateHeroBanner() {
+    const hookEl = document.getElementById("heroHook");
+    const subtextEl = document.getElementById("heroSubtext");
+    const ctaEl = document.getElementById("heroCTA");
+    const imageEl = document.getElementById("heroImage");
+
+    if (!hookEl || !allProducts || allProducts.length === 0) return;
+
+    const banner = HERO_BANNERS[currentHeroIndex];
+
+    // Find a product from the category
+    const categoryProducts = allProducts.filter(p =>
+        p.category && p.category.toLowerCase() === banner.category.toLowerCase()
+    );
+
+    const product = categoryProducts.length > 0
+        ? categoryProducts[Math.floor(Math.random() * categoryProducts.length)]
+        : allProducts[Math.floor(Math.random() * allProducts.length)];
+
+    heroProductId = product.id;
+
+    // Update content with fade effect
+    hookEl.style.opacity = "0";
+    subtextEl.style.opacity = "0";
+    ctaEl.style.opacity = "0";
+    imageEl.style.opacity = "0";
+
+    setTimeout(() => {
+        hookEl.textContent = banner.hook;
+        subtextEl.textContent = banner.subtext;
+        ctaEl.textContent = banner.cta;
+        imageEl.src = product.image || "../img/default.jpg";
+        imageEl.alt = product.title;
+
+        hookEl.style.opacity = "1";
+        subtextEl.style.opacity = "1";
+        ctaEl.style.opacity = "1";
+        imageEl.style.opacity = "1";
+    }, 300);
+}
+
+window.heroAction = function () {
+    if (heroProductId) {
+        window.location.href = `product.html?id=${heroProductId}`;
+    }
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadAllProducts();
+    initSearch();
+    loadBanners();
+    loadHeroBanner(); // Initialize hero banner
+
+    if (productList) loadCategorySections();
+    if (categoryGrid) loadCategories();
+    loadSingleProduct();
+
+    updateCartCount();
+    updateNotificationCount();
+});
+
+setInterval(updateNotificationCount, 30000);
+

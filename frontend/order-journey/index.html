@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Journey Animation - SAI STORES</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ================= ORDER JOURNEY SECTION ================= -->
+    <section class="order-journey-section" id="orderJourney">
+        <div class="journey-container">
+
+            <!-- Title & Description -->
+            <div class="journey-header">
+                <h2 class="journey-title">Your Order Journey</h2>
+                <p class="journey-subtitle">Watch how we deliver happiness to your doorstep</p>
+            </div>
+
+            <!-- Animation Stage -->
+            <div class="animation-stage">
+
+                <!-- Background Road -->
+                <div class="road"></div>
+
+                <!-- Shop Building (Left) -->
+                <div class="shop">
+                    <div class="shop-roof"></div>
+                    <div class="shop-body">
+                        <div class="shop-window"></div>
+                        <div class="shop-window"></div>
+                        <div class="shop-door"></div>
+                    </div>
+                    <div class="shop-sign">SAI STORES</div>
+                </div>
+
+                <!-- Delivery Boy Character -->
+                <div class="delivery-boy" id="deliveryBoy">
+                    <svg viewBox="0 0 100 150" class="boy-svg">
+                        <!-- Head -->
+                        <circle cx="50" cy="30" r="20" fill="#fbbf24" />
+                        <!-- Body -->
+                        <rect x="35" y="50" width="30" height="40" rx="5" fill="#3b82f6" />
+                        <!-- Arms -->
+                        <rect x="25" y="55" width="10" height="30" rx="5" fill="#fbbf24" class="arm-left" />
+                        <rect x="65" y="55" width="10" height="30" rx="5" fill="#fbbf24" class="arm-right" />
+                        <!-- Legs -->
+                        <rect x="38" y="90" width="10" height="35" rx="5" fill="#1e293b" class="leg-left" />
+                        <rect x="52" y="90" width="10" height="35" rx="5" fill="#1e293b" class="leg-right" />
+                        <!-- Cap -->
+                        <ellipse cx="50" cy="20" rx="22" ry="8" fill="#dc2626" />
+                        <!-- Face -->
+                        <circle cx="45" cy="28" r="2" fill="#000" />
+                        <circle cx="55" cy="28" r="2" fill="#000" />
+                        <path d="M 45 35 Q 50 38 55 35" stroke="#000" stroke-width="2" fill="none" />
+                    </svg>
+                </div>
+
+                <!-- Package Box -->
+                <div class="package-box" id="packageBox">
+                    <svg viewBox="0 0 80 80" class="box-svg">
+                        <rect x="10" y="20" width="60" height="50" fill="#d97706" stroke="#92400e" stroke-width="2" />
+                        <rect x="10" y="20" width="60" height="15" fill="#b45309" />
+                        <line x1="40" y1="20" x2="40" y2="70" stroke="#92400e" stroke-width="3" />
+                        <line x1="10" y1="42.5" x2="70" y2="42.5" stroke="#92400e" stroke-width="3" />
+                        <!-- Fragile icon -->
+                        <text x="40" y="55" font-size="12" fill="#fff" text-anchor="middle">📦</text>
+                    </svg>
+                </div>
+
+                <!-- Delivery Van -->
+                <div class="delivery-van" id="deliveryVan">
+                    <svg viewBox="0 0 200 120" class="van-svg">
+                        <!-- Van Body -->
+                        <rect x="40" y="30" width="120" height="60" rx="5" fill="#22c55e" stroke="#166534"
+                            stroke-width="2" />
+                        <!-- Van Cabin -->
+                        <path d="M 40 30 L 40 50 L 20 50 L 20 70 L 40 70 L 40 90" fill="#22c55e" stroke="#166534"
+                            stroke-width="2" />
+                        <!-- Windows -->
+                        <rect x="25" y="35" width="12" height="12" fill="#93c5fd" />
+                        <rect x="50" y="35" width="30" height="20" fill="#93c5fd" />
+                        <rect x="90" y="35" width="30" height="20" fill="#93c5fd" />
+                        <!-- Door (animated) -->
+                        <rect x="130" y="40" width="25" height="45" rx="2" fill="#16a34a" stroke="#166534"
+                            stroke-width="2" class="van-door" id="vanDoor" />
+                        <!-- Wheels -->
+                        <circle cx="50" cy="90" r="12" fill="#1e293b" stroke="#000" stroke-width="2" />
+                        <circle cx="50" cy="90" r="6" fill="#64748b" />
+                        <circle cx="140" cy="90" r="12" fill="#1e293b" stroke="#000" stroke-width="2" />
+                        <circle cx="140" cy="90" r="6" fill="#64748b" />
+                        <!-- Logo -->
+                        <text x="100" y="65" font-size="14" fill="#fff" font-weight="bold"
+                            text-anchor="middle">SAI</text>
+                    </svg>
+                </div>
+
+                <!-- Message Display -->
+                <div class="journey-message" id="journeyMessage">
+                    <p id="messageText">Click Start to begin the journey!</p>
+                </div>
+
+            </div>
+
+            <!-- Controls -->
+            <div class="journey-controls">
+                <button class="start-btn" id="startBtn" onclick="startJourney()">
+                    <i class="fa-solid fa-play"></i> Start Journey
+                </button>
+                <button class="reset-btn" id="resetBtn" onclick="resetJourney()" style="display: none;">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+
+            <!-- CTA Section (appears at end) -->
+            <div class="journey-cta" id="journeyCTA" style="display: none;">
+                <h3>Ready to Experience Fast Delivery?</h3>
+                <div class="cta-buttons">
+                    <a href="user/products.html" class="cta-btn primary">
+                        <i class="fa-solid fa-shopping-cart"></i> Shop Now
+                    </a>
+                    <a href="user/orders.html" class="cta-btn secondary">
+                        <i class="fa-solid fa-box"></i> Track Order
+                    </a>
+                </div>
+                <div class="delivery-features">
+                    <div class="feature-item">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Dispatch in 24 Hours</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-truck-fast"></i>
+                        <span>Free Delivery</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>100% Safe Packaging</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
