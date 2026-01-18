@@ -745,6 +745,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadAllProducts();
     initSearch();
     loadBanners();
+    loadHeroBanner(); // Initialize hero banner
 
     if (productList) loadCategorySections();
     if (categoryGrid) loadCategories();
@@ -863,19 +864,5 @@ window.heroAction = function () {
     }
 };
 
-document.addEventListener("DOMContentLoaded", async () => {
-    await loadAllProducts();
-    initSearch();
-    loadBanners();
-    loadHeroBanner(); // Initialize hero banner
-
-    if (productList) loadCategorySections();
-    if (categoryGrid) loadCategories();
-    loadSingleProduct();
-
-    updateCartCount();
-    updateNotificationCount();
-});
-
-setInterval(updateNotificationCount, 30000);
+// Removed duplicate DOMContentLoaded listener to prevent double initialization
 
