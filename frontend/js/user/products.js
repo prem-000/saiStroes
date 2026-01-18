@@ -649,105 +649,39 @@ window.buyNow = async (id) => {
 };
 
 /* --------------------------------------------------
-   DYNAMIC BANNERS (HOMEPAGE ONLY)
+    DAILY BANNERS (HOMEPAGE ONLY)
 -------------------------------------------------- */
-const COLOR_PALETTES = [
-    ["#1a1a2e", "#16213e", "#0f3460"], // Deep Navy
-    ["#2d1b69", "#5b2c6f", "#8e44ad"], // Royal Purple
-    ["#0a192f", "#172a45", "#1e3a5f"], // Midnight Blue
-    ["#1f1c2c", "#928dab", "#5f4b8b"], // Twilight Purple
-    ["#141e30", "#243b55", "#2c5364"], // Ocean Deep
-    ["#2c003e", "#512b58", "#7b2869"], // Deep Magenta
-    ["#000428", "#004e92", "#1a5490"], // Deep Ocean
-    ["#360033", "#0b8793", "#1a5f7a"]  // Teal Night
+const BANNER_IMAGES = [
+    "../img/banners/banner1.jpg",
+    "../img/banners/banner2.jpg",
+    "../img/banners/banner3.jpg",
+    "../img/banners/banner4.jpg",
+    "../img/banners/banner5.jpg"
 ];
 
-const TEXT_VARIATIONS = [
-    "✨ Discover Premium Picks",
-    "🔥 Trending Now - Shop Fresh",
-    "🎯 Your Daily Essentials Await",
-    "💫 Handpicked Just For You",
-    "🌟 Quality Meets Convenience",
-    "🛒 Fresh Deals, Fast Delivery",
-    "⚡ Shop Smart, Save More"
+const BANNER_MESSAGES = [
+    "✨ Exclusive Daily Deals - Fresh for You!",
+    "🔥 Today's Special Picks at SAI STORES",
+    "🎯 Quality Groceries, Delivered Daily",
+    "🌟 Handpicked Essentials for Your Home",
+    "🛒 Freshness You Can Trust, Every Day"
 ];
-
-let currentBannerTimer = null;
-let isBannerHovered = false;
 
 async function loadBanners() {
-    const banner = document.getElementById("dynamicBanner");
-    if (!banner) return; // not homepage
+    const banner = document.getElementById("dailyBanner");
+    const bannerImg = document.getElementById("dailyBannerImg");
+    const bannerText = document.getElementById("dailyBannerText");
 
-    // Initial load
-    updateDynamicBanner();
+    if (!banner || !bannerImg || !bannerText) return;
 
-    // Start rotation
-    startBannerRotation();
+    // Daily rotation logic: (Day of the month) % 5
+    const today = new Date().getDate();
+    const bannerIndex = (today - 1) % BANNER_IMAGES.length;
 
-    // Hover logic
-    banner.addEventListener("mouseenter", () => {
-        isBannerHovered = true;
-        if (currentBannerTimer) clearTimeout(currentBannerTimer);
-    });
-
-    banner.addEventListener("mouseleave", () => {
-        isBannerHovered = false;
-        startBannerRotation();
-    });
+    bannerImg.src = BANNER_IMAGES[bannerIndex];
+    bannerText.innerText = BANNER_MESSAGES[bannerIndex];
 }
 
-function startBannerRotation() {
-    if (currentBannerTimer) clearTimeout(currentBannerTimer);
-    currentBannerTimer = setTimeout(async () => {
-        if (!isBannerHovered) {
-            await updateDynamicBanner();
-            startBannerRotation();
-        }
-    }, 5000);
-}
-
-async function updateDynamicBanner() {
-    const banner = document.getElementById("dynamicBanner");
-    const content = document.getElementById("bannerContent");
-    const textEl = document.getElementById("bannerText");
-    const productsEl = document.getElementById("bannerProducts");
-
-    if (!banner || !content || !allProducts || allProducts.length === 0) return;
-
-    // 1. Fade out
-    content.classList.add("fade-out");
-
-    await new Promise(r => setTimeout(r, 500));
-
-    // 2. Select Random Items
-    const palette = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
-    const angle = Math.floor(Math.random() * 360);
-    const slogan = TEXT_VARIATIONS[Math.floor(Math.random() * TEXT_VARIATIONS.length)];
-
-    // Pick 3-5 random products
-    const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
-    const selectedProds = shuffled.slice(0, 3 + Math.floor(Math.random() * 2));
-
-    // 3. Update Styles & Content
-    banner.style.background = `linear-gradient(${angle}deg, ${palette[0]} 0%, ${palette[1]} 50%, ${palette[2]} 100%)`;
-
-    textEl.innerText = slogan;
-    textEl.style.color = "#fff";
-    textEl.style.fontSize = `${32 + Math.random() * 20}px`;
-    textEl.style.transform = `rotate(${Math.random() * 6 - 3}deg)`;
-
-    productsEl.innerHTML = selectedProds.map((p, i) => `
-        <img src="${p.image || './default.jpg'}" 
-             class="banner-prod-img" 
-             onclick="viewProduct('${p.id}')"
-             title="${p.title}"
-             style="transition-delay: ${i * 0.1}s">
-    `).join("");
-
-    // 4. Fade in
-    content.classList.remove("fade-out");
-}
 
 /* --------------------------------------------------
     INITIAL LOAD

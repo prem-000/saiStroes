@@ -46,16 +46,15 @@
   </header>
 
   <main>
-    <!-- ================= HERO BANNER - "FIRST PUNCH" ================= -->
-    <div class="hero-banner" id="heroBanner">
-      <div class="hero-content">
-        <div class="hero-text">
-          <h1 class="hero-hook" id="heroHook">Level Up Your Audio</h1>
-          <p class="hero-subtext" id="heroSubtext">Premium wireless earbuds with 40hr battery</p>
-          <button class="hero-cta" id="heroCTA" onclick="heroAction()">Shop Now</button>
+    <!-- ================= DAILY HERO BANNER ================= -->
+    <div class="daily-banner" id="dailyBanner">
+      <div class="daily-banner-content">
+        <div class="daily-banner-text">
+          <h1 id="dailyBannerText">✨ Exclusive Daily Deals - Fresh for You!</h1>
+          <button class="daily-banner-cta" onclick="window.scrollTo({top: 500, behavior: 'smooth'})">Shop Now</button>
         </div>
-        <div class="hero-image">
-          <img id="heroImage" src="../img/default.jpg" alt="Featured Product">
+        <div class="daily-banner-image">
+          <img id="dailyBannerImg" src="../img/banners/banner1.jpg" alt="Daily Special">
         </div>
       </div>
     </div>
@@ -80,13 +79,6 @@
       </div>
     </div>
 
-    <!-- ================= DYNAMIC BANNER (STAGE SPOTLIGHT) ================= -->
-    <div class="dynamic-banner-container" id="dynamicBanner">
-      <div class="banner-content" id="bannerContent">
-        <div class="banner-text" id="bannerText"></div>
-        <div class="banner-products" id="bannerProducts"></div>
-      </div>
-    </div>
 
 
     <!-- ================= PRODUCTS (AUTO FROM JS) ================= -->
